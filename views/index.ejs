@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= data.profile.name %> • Linktree</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="scanline"></div>
+
+  <main class="container">
+    <!-- Foto Profil -->
+    <div class="avatar-wrap">
+      <div class="avatar-glow"></div>
+      <div class="avatar">
+        <% if (data.profile.avatarUrl) { %>
+          <img src="<%= data.profile.avatarUrl %>" alt="avatar">
+        <% } else { %>
+          <span class="avatar-emoji">🤖</span>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- Nama & Bio -->
+    <h1 class="name"><%= data.profile.name %></h1>
+    <p class="handle"><%= data.profile.handle %></p>
+    <p class="bio"><%= data.profile.bio %></p>
+
+    <!-- Link Buttons -->
+    <div class="links">
+      <% data.links.forEach((link, i) => { %>
+        <% if (link.id === 'cek-lokasi') { %>
+          <a class="link-btn" href="/lokasi" style="--i:<%= i %>">
+            <span class="link-icon">
+              <% if (link.icon === 'tiktok') { %><sonic class="i-tiktok">♫</sonic><% } %>
+              <% if (link.icon === 'instagram') { %><span class="i-instagram">◎</span><% } %>
+              <% if (link.icon === 'whatsapp') { %><span class="i-whatsapp">✆</span><% } %>
+              <% if (link.icon === 'location') { %><span class="i-location">⌖</span><% } %>
+            </span>
+            <span class="link-text">
+              <strong><%= link.label %></strong>
+              <% if (link.username) { %><small>@<%= link.username %></small><% } %>
+            </span>
+            <span class="link-arrow">→</span>
+          </a>
+        <% } else { %>
+          <a class="link-btn" href="<%= link.url %>" target="_blank" rel="noopener" style="--i:<%= i %>">
+            <span class="link-icon">
+              <% if (link.icon === 'tiktok') { %><span class="i-tiktok">♫</span><% } %>
+              <% if (link.icon === 'instagram') { %><span class="i-instagram">◎</span><% } %>
+              <% if (link.icon === 'whatsapp') { %><span class="i-whatsapp">✆</span><% } %>
+              <% if (link.icon === 'location') { %><span class="i-location">⌖</span><% } %>
+            </span>
+            <span class="link-text">
+              <strong><%= link.label %></strong>
+              <% if (link.username) { %><small>@<%= link.username %></small><% } %>
+            </span>
+            <span class="link-arrow">→</span>
+          </a>
+        <% } %>
+      <% }) %>
+    </div>
+
+    <footer class="footer">
+      <span class="copyright">© <span id="year"></span> <%= data.profile.name %> • Cyber cyber</span>
+    </footer>
+  </main>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear()
+  </script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "name": "kenurkybot-web",
+  "version": "1.0.0",
+  "description": "KenurkyBot linktree website",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "ejs": "^3.1.10"
+  }
+}

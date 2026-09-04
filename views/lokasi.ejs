@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cek Lokasi Nomor • KenurkyBot</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="scanline"></div>
+
+  <main class="container narrow">
+    <a href="/" class="back-link">← Kembali</a>
+
+    <h1 class="name">⌖ Cek Lokasi Nomor</h1>
+    <p class="bio">Masukkan nomor WhatsApp untuk melihat info lokasi / operator.</p>
+
+    <div class="lokasi-panel">
+      <input type="tel" id="nomor" placeholder="08xxxxxxxxxx" class="input">
+      <button id="cekBtn" class="btn-primary">Trace Nomor →</button>
+    </div>
+
+    <div id="hasil" class="hasil hidden"></div>
+
+    <div style="height:20px"></div>
+    <a href="/" class="back-link" style="text-align:center">© KenurkyBot</a>
+  </main>
+
+  <script>
+    const cekBtn = document.getElementById('cekBtn')
+    const nomor = document.getElementById('nomor')
+    const hasil = document.getElementById('hasil')
+
+    cekBtn.addEventListener('click', async () => {
+      hasil.classList.add('hidden')
+      hasil.classList.remove('show')
+      cekBtn.textContent = 'Menelusuri...'
+      cekBtn.disabled = true
+      try {
+        const res = await fetch('/api/lokasi', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nomor: nomor.value })
+        })
+        const d = await res.json()
+        if (!d.ok) {
+          hasil.innerHTML = `<div class="hasil-error">⚠️ ${d.error}</div>`
+        } else {
+          hasil.innerHTML = `
+            <div class="hasil-card reveal">
+              <div class="hasil-row"><span>Nomor</span><strong>+${d.nomor}</strong></div>
+              <div class="hasil-row"><span>Operator</span><strong>${d.operator}</strong></div>
+              <div class="hasil-row"><span>Kota</span><strong>${d.kota}</strong></div>
+              <div class="hasil-row"><span>Provinsi</span><strong>${d.provinsi}</strong></div>
+              <div class="hasil-note">⚠️ Hasil simulasi — untuk akurasi penuh hubungi admin bot.</div>
+            </div>`
+        }
+        hasil.classList.remove('hidden')
+        hasil.classList.add('show')
+      } catch (e) {
+        hasil.innerHTML = `<div class="hasil-error">⚠️ Terjadi error. Coba lagi.</div>`
+        hasil.classList.remove('hidden')
+        hasil.classList.add('show')
+      } finally {
+        cekBtn.textContent = 'Trace Nomor →'
+        cekBtn.disabled = false
+      }
+    })
+
+    nomor.addEventListener('keydown', e => { if (e.key === 'Enter') cekBtn.click() })
+  </script>
+</body>
+</html>

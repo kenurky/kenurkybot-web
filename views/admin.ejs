@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin • KenurkyBot Linktree</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="scanline"></div>
+
+  <main class="container narrow wide">
+    <h1 class="name">🛠️ Admin Panel</h1>
+    <p class="bio">Kelola link & profil linktree.</p>
+
+    <section class="panel">
+      <h2>✏️ Profil</h2>
+      <div class="panel-grid">
+        <input id="p-name" placeholder="Nama" value="<%= data.profile.name %>">
+        <input id="p-handle" placeholder="Handle" value="<%= data.profile.handle %>">
+        <input id="p-bio" placeholder="Bio" value="<%= data.profile.bio %>">
+        <input id="p-avatar" placeholder="URL Avatar" value="<%= data.profile.avatarUrl || '' %>">
+      </div>
+      <button class="btn-primary small" id="saveProfile">Simpan Profil</button>
+    </section>
+
+    <section class="panel">
+      <h2>🔗 Links</h2>
+      <div id="linksList"></div>
+
+      <h3>+ Tambah Link</h3>
+      <div class="panel-grid">
+        <input id="l-label" placeholder="Label (TikTok)">
+        <input id="l-url" placeholder="URL">
+        <input id="l-username" placeholder="Username (opsional)">
+        <select id="l-icon">
+          <option value="tiktok">TikTok</option>
+          <option value="instagram">Instagram</option>
+          <option value="whatsapp">WhatsApp</option>
+          <option value="location">Lokasi</option>
+        </select>
+      </div>
+      <button class="btn-primary small" id="addLink">Tambah Link</button>
+    </section>
+
+    <a href="/" class="back-link" style="display:block;text-align:center;margin-top:10px">↩ Lihat Linktree</a>
+  </main>
+
+  <script>
+    async function load() {
+      const res = await fetch('/api/data')
+      return res.json()
+    }
+
+    async function renderLinks() {
+      const data = await load()
+      const list = document.getElementById('linksList')
+      list.innerHTML = data.links.map(l => `
+        <div class="link-row">
+          <div>
+            <strong>${l.label}</strong>
+            <small>${l.url}</small>
+          </div>
+          <div class="row-actions">
+            <button class="del btn-danger" data-id="${l.id}">Hapus</button>
+          </div>
+        </div>`).join('')
+
+      list.querySelectorAll('.del').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          await fetch('/api/links/' + btn.dataset.id, { method: 'DELETE' })
+          renderLinks()
+        })
+      })
+    }
+
+    document.getElementById('saveProfile').addEventListener('click', async () => {
+      await fetch('/api/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: document.getElementById('p-name').value,
+          handle: document.getElementById('p-handle').value,
+          bio: document.getElementById('p-bio').value,
+          avatarUrl: document.getElementById('p-avatar').value
+        })
+      })
+      alert('Profil tersimpan ✅')
+    })
+
+    document.getElementById('addLink').addEventListener('click', async () => {
+      const label = document.getElementById('l-label').value
+      const url = document.getElementById('l-url').value
+      const username = document.getElementById('l-username').value
+      const icon = document.getElementById('l-icon').value
+      if (!label || !url) { alert('Label & URL wajib diisi'); return }
+      await fetch('/api/links', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ label, url, username, icon })
+      })
+      document.getElementById('l-label').value = ''
+      document.getElementById('l-url').value = ''
+      document.getElementById('l-username').value = ''
+      renderLinks()
+    })
+
+    renderLinks()
+  </script>
+</body>
+</html>

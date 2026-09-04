@@ -1,0 +1,38 @@
+{
+  "profile": {
+    "name": "KenurkyBot",
+    "handle": "@kenurky",
+    "bio": "KenurkyBot • Soft • Ganteng ganteng cyberpunk",
+    "avatarUrl": ""
+  },
+  "links": [
+    {
+      "id": "tiktok",
+      "label": "TikTok",
+      "username": "kenurky_",
+      "url": "https://www.tiktok.com/@kenurky_",
+      "icon": "tiktok"
+    },
+    {
+      "id": "instagram",
+      "label": "Instagram",
+      "username": "kenurky",
+      "url": "https://www.instagram.com/kenurky",
+      "icon": "instagram"
+    },
+    {
+      "id": "group",
+      "label": "Grup WhatsApp",
+      "username": "Kenurky Bot Official",
+      "url": "https://chat.whatsapp.com/BwDMVsxQfX7DnSQqPiNvH1",
+      "icon": "whatsapp"
+    },
+    {
+      "id": "cek-lokasi",
+      "label": "Cek Lokasi Nomor",
+      "username": "Trace lokasi dari nomor telepon",
+      "url": "/lokasi",
+      "icon": "location"
+    }
+  ]
+}
