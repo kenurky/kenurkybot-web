@@ -1,10 +1,9 @@
 import express from 'express'
-import { readFileSync, writeFileSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
+import { getProfile, saveProfile, getLinks, addLink, updateLink, deleteLink } from './db.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const DATA_FILE = join(__dirname, 'data/links.json')
 const PORT = process.env.PORT || 3000
 
 const app = express()
@@ -13,42 +12,31 @@ app.use(express.static(join(__dirname, 'public')))
 app.set('view engine', 'ejs')
 app.set('views', join(__dirname, 'views'))
 
-function loadData() {
-  try {
-    return JSON.parse(readFileSync(DATA_FILE, 'utf8'))
-  } catch {
-    return { profile: { name: 'KenurkyBot', handle: '@kenurky', bio: '', avatarUrl: '' }, links: [] }
-  }
-}
-
-function saveData(data) {
-  writeFileSync(DATA_FILE, JSON.stringify(data, null, 2))
-}
-
 // ===== Halaman utama (linktree) =====
-app.get('/', (req, res) => {
-  res.render('index', { data: loadData() })
+app.get('/', async (req, res) => {
+  try {
+    const [profile, links] = await Promise.all([getProfile(), getLinks()])
+    res.render('index', { data: { profile, links } })
+  } catch (e) {
+    res.status(500).send('Terjadi error: ' + e.message)
+  }
 })
 
 // ===== Halaman cek lokasi nomor =====
-app.get('/lokasi', (req, res) => {
-  res.render('lokasi')
-})
+app.get('/lokasi', (req, res) => res.render('lokasi'))
 
-// API: cek lokasi nomor (mock sederhana, ganti sesuai kebutuhan)
 app.post('/api/lokasi', (req, res) => {
   const nomor = (req.body?.nomor || '').replace(/[^\d]/g, '')
   if (!nomor) return res.json({ ok: false, error: 'Nomor wajib diisi' })
   if (nomor.length < 7) return res.json({ ok: false, error: 'Nomor tidak valid' })
 
-  // Simulasi hasil — nanti bisa dihubungkan ke fitur bot / API eksternal.
   const kota = ['Kota Bandung', 'Kota Jakarta', 'Kota Surabaya', 'Kota Medan', 'Kota Makassar', 'Kota Semarang']
   const prov = ['Jawa Barat', 'DKI Jakarta', 'Jawa Timur', 'Sumatera Utara', 'Sulawesi Selatan', 'Jawa Tengah']
   const idx = Math.abs(hashNomor(nomor)) % kota.length
 
   res.json({
     ok: true,
-    nomor: nomor,
+    nomor,
     kode: nomor.slice(0, 2),
     operator: deteksiOperator(nomor),
     kota: kota[idx],
@@ -63,59 +51,77 @@ function hashNomor(s) {
 }
 
 function deteksiOperator(nomor) {
-  const tiga = nomor.slice(0, 3)
-  const empat = nomor.slice(0, 4)
-  if (/^08(1[1-9]|2[1-9]|3[1-9])/.test(nomor)) return 'Telkomsel'
-  if (/^08(5[1-9]|5[0]|5[1])/.test(nomor)) return 'Telkomsel'
-  if (/^081[4-6]|^085[5-8]|^0856/.test(nomor)) return 'Indosat'
-  if (/^081[7-9]|^0859|^087[7-8]/.test(nomor)) return 'XL Axiata'
-  if (/^083[1-3]|^0838/.test(nomor)) return 'Axis'
+  if (/^081[4-6]/.test(nomor)) return 'Indosat'
+  if (/^085[5-8]/.test(nomor)) return 'Indosat'
+  if (/^081[7-9]/.test(nomor)) return 'XL Axiata'
+  if (/^0859/.test(nomor)) return 'XL Axiata'
+  if (/^087[7-8]/.test(nomor)) return 'XL Axiata'
+  if (/^083[1-3]/.test(nomor)) return 'Axis'
+  if (/^0838/.test(nomor)) return 'Axis'
   if (/^089[4-9]/.test(nomor)) return 'Tri (3)'
-  if (/^088[0-9]/.test(nomor)) return 'Smartfren'
+  if (/^088/.test(nomor)) return 'Smartfren'
+  if (/^08(1[0-3]|22|2[3-9]|2[0-1])/.test(nomor)) return 'Telkomsel'
   return 'Operator tidak diketahui'
 }
 
-// ===== Admin API (buat edit link) =====
-app.get('/admin', (req, res) => {
-  res.render('admin', { data: loadData() })
+// ===== Admin panel =====
+app.get('/admin', async (req, res) => {
+  try {
+    const [profile, links] = await Promise.all([getProfile(), getLinks()])
+    res.render('admin', { data: { profile, links } })
+  } catch (e) {
+    res.status(500).send('Terjadi error: ' + e.message)
+  }
 })
 
-app.get('/api/data', (req, res) => {
-  res.json(loadData())
+app.get('/api/data', async (req, res) => {
+  const [profile, links] = await Promise.all([getProfile(), getLinks()])
+  res.json({ profile, links })
 })
 
-app.post('/api/links', (req, res) => {
-  const data = loadData()
-  const l = req.body
-  l.id = l.id || 'link-' + Date.now()
-  data.links.push(l)
-  saveData(data)
-  res.json({ ok: true, link: l })
+app.post('/api/links', async (req, res) => {
+  try {
+    const link = await addLink(req.body)
+    res.json({ ok: true, link })
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message })
+  }
 })
 
-app.put('/api/links/:id', (req, res) => {
-  const data = loadData()
-  const idx = data.links.findIndex(x => x.id === req.params.id)
-  if (idx === -1) return res.status(404).json({ ok: false, error: 'not found' })
-  data.links[idx] = { ...data.links[idx], ...req.body, id: req.params.id }
-  saveData(data)
-  res.json({ ok: true, link: data.links[idx] })
+app.put('/api/links/:id', async (req, res) => {
+  try {
+    const link = await updateLink(req.params.id, req.body)
+    if (!link) return res.status(404).json({ ok: false, error: 'not found' })
+    res.json({ ok: true, link })
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message })
+  }
 })
 
-app.delete('/api/links/:id', (req, res) => {
-  const data = loadData()
-  data.links = data.links.filter(x => x.id !== req.params.id)
-  saveData(data)
-  res.json({ ok: true })
+app.delete('/api/links/:id', async (req, res) => {
+  try {
+    await deleteLink(req.params.id)
+    res.json({ ok: true })
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message })
+  }
 })
 
-app.put('/api/profile', (req, res) => {
-  const data = loadData()
-  data.profile = { ...data.profile, ...req.body }
-  saveData(data)
-  res.json({ ok: true, profile: data.profile })
+app.put('/api/profile', async (req, res) => {
+  try {
+    const profile = await saveProfile(req.body)
+    res.json({ ok: true, profile })
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message })
+  }
 })
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`[kenurkybot-web] running on http://0.0.0.0:${PORT}`)
-})
+// Express app untuk Vercel
+export default app
+
+// Jalan lokal (bukan Vercel)
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`[kenurkybot-web] running on http://0.0.0.0:${PORT}`)
+  })
+}
