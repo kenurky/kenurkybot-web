@@ -19,7 +19,7 @@
         <input id="p-name" placeholder="Nama" value="<%= data.profile.name %>">
         <input id="p-handle" placeholder="Handle" value="<%= data.profile.handle %>">
         <input id="p-bio" placeholder="Bio" value="<%= data.profile.bio %>">
-        <input id="p-avatar" placeholder="URL Avatar" value="<%= data.profile.avatarUrl || '' %>">
+        <input id="p-avatar" placeholder="URL Avatar" value="<%= data.profile.avatar_url || '' %>">
       </div>
       <button class="btn-primary small" id="saveProfile">Simpan Profil</button>
     </section>
@@ -82,7 +82,7 @@
           name: document.getElementById('p-name').value,
           handle: document.getElementById('p-handle').value,
           bio: document.getElementById('p-bio').value,
-          avatarUrl: document.getElementById('p-avatar').value
+          avatar_url: document.getElementById('p-avatar').value
         })
       })
       alert('Profil tersimpan ✅')

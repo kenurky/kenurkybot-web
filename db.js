@@ -12,7 +12,7 @@ const DEFAULT_PROFILE = {
   name: 'KenurkyBot',
   handle: '@kenurky',
   bio: '',
-  avatarUrl: ''
+  avatar_url: ''
 }
 const DEFAULT_LINKS = []
 
