@@ -3,109 +3,373 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin • KenurkyBot Linktree</title>
+  <title>Admin Panel • KenurKyBot</title>
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/admin.css">
 </head>
 <body>
   <div class="scanline"></div>
 
-  <main class="container narrow wide">
-    <h1 class="name">🛠️ Admin Panel</h1>
-    <p class="bio">Kelola link & profil linktree.</p>
+  <div class="admin-wrap">
+    <div class="admin-bg-grid"></div>
 
-    <section class="panel">
-      <h2>✏️ Profil</h2>
-      <div class="panel-grid">
-        <input id="p-name" placeholder="Nama" value="<%= data.profile.name %>">
-        <input id="p-handle" placeholder="Handle" value="<%= data.profile.handle %>">
-        <input id="p-bio" placeholder="Bio" value="<%= data.profile.bio %>">
-        <input id="p-avatar" placeholder="URL Avatar" value="<%= data.profile.avatar_url || '' %>">
+    <div class="admin-inner">
+      <!-- ===== HERO ===== -->
+      <header class="admin-hero">
+        <div class="hero-glow"></div>
+        <span class="hero-badge">Control Center</span>
+        <div class="hero-avatar">
+          <% if (data.profile.avatar_url) { %>
+            <img src="<%= data.profile.avatar_url %>" alt="avatar">
+          <% } else { %>
+            <span class="hero-emoji">🤖</span>
+          <% } %>
+        </div>
+        <h1>Admin Panel</h1>
+        <p class="admin-sub">Kelola profil & link linktree.</p>
+        <span class="brand">KenurKyBot</span>
+      </header>
+
+      <div class="admin-grid">
+        <!-- ===== CARD PROFIL ===== -->
+        <section class="acard profile-card">
+          <div class="acard-head">
+            <span class="card-ico" id="iconEditProfile">✎</span>
+            <h2>Profil</h2>
+            <span class="card-hint" id="profileStatus">Tersimpan ✓</span>
+          </div>
+          <div class="profile-body">
+            <div class="profile-preview clickable" id="avatarPreview" title="Klik untuk pilih URL avatar">
+              <% if (data.profile.avatar_url) { %>
+                <img src="<%= data.profile.avatar_url %>" alt="avatar" id="avatarImg" onerror="this.style.display='none';document.getElementById('pfEmoji').style.display='flex'">
+                <span class="pf-emoji" id="pfEmoji" style="display:none">🤖</span>
+              <% } else { %>
+                <span class="pf-emoji" id="pfEmoji">🤖</span>
+              <% } %>
+              <span class="pf-change">UBAH</span>
+            </div>
+
+            <div class="profile-fields">
+              <div class="field">
+                <label for="p-name">Nama</label>
+                <input class="afield" id="p-name" placeholder="Nama profil" value="<%= data.profile.name %>">
+              </div>
+              <div class="field">
+                <label for="p-handle">Username</label>
+                <input class="afield" id="p-handle" placeholder="@username" value="<%= data.profile.handle %>">
+              </div>
+              <div class="field">
+                <label for="p-bio">Bio / Deskripsi</label>
+                <textarea class="afield" id="p-bio" placeholder="Deskripsi singkat profil"><%= data.profile.bio %></textarea>
+              </div>
+              <div class="field">
+                <label for="p-avatar">URL Avatar</label>
+                <input class="afield" id="p-avatar" placeholder="https://.../foto.png" value="<%= data.profile.avatar_url || '' %>">
+              </div>
+              <button class="btn btn-cyber small" id="saveProfile">
+                <span class="btn-label">💾 Simpan Profil</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== CARD LINKS ===== -->
+        <section class="acard links-card">
+          <div class="acard-head">
+            <span class="card-ico">🔗</span>
+            <h2>Links</h2>
+            <span class="card-hint" id="linksCount"></span>
+          </div>
+          <div id="linksList"></div>
+        </section>
+
+        <!-- ===== CARD TAMBAH LINK ===== -->
+        <section class="acard add-card">
+          <div class="acard-head">
+            <span class="card-ico">＋</span>
+            <h2 id="addTitle">Tambah Link</h2>
+          </div>
+          <input type="hidden" id="editId" value="">
+          <div class="add-grid">
+            <div class="field">
+              <label for="l-label">Label</label>
+              <input class="afield" id="l-label" placeholder="Contoh: TikTok">
+            </div>
+            <div class="field">
+              <label for="l-icon">Platform</label>
+              <select class="afield" id="l-icon">
+                <option value="tiktok">TikTok</option>
+                <option value="instagram">Instagram</option>
+                <option value="whatsapp">WhatsApp</option>
+                <option value="location">Lokasi</option>
+                <option value="link">Link umum</option>
+              </select>
+            </div>
+            <div class="field full">
+              <label for="l-url">URL</label>
+              <input class="afield" id="l-url" placeholder="https://...">
+            </div>
+            <div class="field full">
+              <label for="l-username">Username (opsional)</label>
+              <input class="afield" id="l-username" placeholder="kenurky">
+            </div>
+          </div>
+          <button class="btn btn-cyber full" id="addBtn">
+            <span class="btn-label">＋ Tambah Link</span>
+          </button>
+          <button class="btn btn-ghost full hidden" id="cancelEdit" style="margin-top:10px">✕ Batal Edit</button>
+        </section>
       </div>
-      <button class="btn-primary small" id="saveProfile">Simpan Profil</button>
-    </section>
 
-    <section class="panel">
-      <h2>🔗 Links</h2>
-      <div id="linksList"></div>
-
-      <h3>+ Tambah Link</h3>
-      <div class="panel-grid">
-        <input id="l-label" placeholder="Label (TikTok)">
-        <input id="l-url" placeholder="URL">
-        <input id="l-username" placeholder="Username (opsional)">
-        <select id="l-icon">
-          <option value="tiktok">TikTok</option>
-          <option value="instagram">Instagram</option>
-          <option value="whatsapp">WhatsApp</option>
-          <option value="location">Lokasi</option>
-        </select>
+      <!-- ===== CTA ===== -->
+      <div class="admin-cta">
+        <a class="btn-view" href="/">↗ Lihat Linktree</a>
       </div>
-      <button class="btn-primary small" id="addLink">Tambah Link</button>
-    </section>
+      <footer class="admin-footer">© <span id="year"></span> KenurKyBot</footer>
+    </div>
+  </div>
 
-    <a href="/" class="back-link" style="display:block;text-align:center;margin-top:10px">↩ Lihat Linktree</a>
-  </main>
+  <!-- Toast -->
+  <div class="toast" id="toast"><span class="toast-ico"></span><span class="toast-msg"></span></div>
+
+  <!-- Modal confirm -->
+  <div class="modal-ov" id="modalOv">
+    <div class="modal-box">
+      <h3 id="modalTitle">Hapus link?</h3>
+      <p id="modalDesc">Link ini akan dihapus permanen.</p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="modalCancel">Batal</button>
+        <button class="btn btn-danger-solid" id="modalOk">Hapus</button>
+      </div>
+    </div>
+  </div>
 
   <script>
-    async function load() {
-      const res = await fetch('/api/data')
+    const ICONS = {
+      tiktok: '<span class="i-tiktok">♫</span>',
+      instagram: '<span class="i-instagram">◎</span>',
+      whatsapp: '<span class="i-whatsapp">✆</span>',
+      location: '<span class="i-location">⌖</span>',
+      link: '<span class="i-link">↗</span>'
+    }
+
+    let toastTimer = null
+    function toast(msg, type = 'success') {
+      const el = document.getElementById('toast')
+      const ico = type === 'error' ? '⚠️' : '✅'
+      el.querySelector('.toast-ico').textContent = ico
+      el.querySelector('.toast-msg').textContent = msg
+      el.className = 'toast ' + type + ' show'
+      clearTimeout(toastTimer)
+      toastTimer = setTimeout(() => { el.className = 'toast' }, 2600)
+    }
+
+    async function api(url, opts = {}) {
+      const res = await fetch(url, opts)
+      if (!res.ok) {
+        let msg = 'Terjadi error'
+        try { const j = await res.json(); msg = j.error || msg } catch (e) {}
+        throw new Error(msg)
+      }
       return res.json()
     }
+
+    async function load() {
+      return api('/api/data')
+    }
+
+    let pendingDelete = null
+    function confirmDelete(id, label) {
+      pendingDelete = id
+      document.getElementById('modalTitle').textContent = 'Hapus "' + label + '"?'
+      document.getElementById('modalDesc').textContent = 'Link ini akan dihapus permanen dari linktree.'
+      document.getElementById('modalOv').classList.add('show')
+    }
+
+    document.getElementById('modalCancel').addEventListener('click', () => {
+      pendingDelete = null
+      document.getElementById('modalOv').classList.remove('show')
+    })
+    document.getElementById('modalOk').addEventListener('click', async () => {
+      if (!pendingDelete) return
+      document.getElementById('modalOv').classList.remove('show')
+      try {
+        await api('/api/links/' + pendingDelete, { method: 'DELETE' })
+        toast('Link dihapus')
+        await renderLinks()
+      } catch (e) { toast(e.message, 'error'); }
+      pendingDelete = null
+    })
 
     async function renderLinks() {
       const data = await load()
       const list = document.getElementById('linksList')
-      list.innerHTML = data.links.map(l => `
-        <div class="link-row">
-          <div>
-            <strong>${l.label}</strong>
-            <small>${l.url}</small>
+      document.getElementById('linksCount').textContent = data.links.length + ' link'
+      list.innerHTML = data.links.map((l, i) => {
+        const icon = ICONS[l.icon] || ICONS.link
+        return `
+        <div class="link-item">
+          <span class="drag-handle" title="Drag">
+            <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>
+          </span>
+          <span class="plat-ico">${icon}</span>
+          <div class="link-info">
+            <span class="li-label">${esc(l.label)}</span>
+            <span class="li-url">${esc(l.url)}</span>
           </div>
-          <div class="row-actions">
-            <button class="del btn-danger" data-id="${l.id}">Hapus</button>
+          <div class="link-actions">
+            <button class="icon-btn edit" data-action="edit" data-id="${esc(l.id)}" title="Edit">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="icon-btn del" data-action="del" data-id="${esc(l.id)}" data-label="${esc(l.label)}" title="Hapus">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
           </div>
-        </div>`).join('')
+        </div>`
+      }).join('')
 
-      list.querySelectorAll('.del').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          await fetch('/api/links/' + btn.dataset.id, { method: 'DELETE' })
-          renderLinks()
-        })
+      list.querySelectorAll('[data-action="del"]').forEach(btn => {
+        btn.addEventListener('click', () => confirmDelete(btn.dataset.id, btn.dataset.label))
+      })
+      list.querySelectorAll('[data-action="edit"]').forEach(btn => {
+        btn.addEventListener('click', () => startEdit(btn.dataset.id, data.links))
       })
     }
 
-    document.getElementById('saveProfile').addEventListener('click', async () => {
-      await fetch('/api/profile', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: document.getElementById('p-name').value,
-          handle: document.getElementById('p-handle').value,
-          bio: document.getElementById('p-bio').value,
-          avatar_url: document.getElementById('p-avatar').value
-        })
-      })
-      alert('Profil tersimpan ✅')
+    function esc(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]))
+    }
+
+    function startEdit(id, links) {
+      const l = links.find(x => x.id === id)
+      if (!l) return
+      document.getElementById('editId').value = l.id
+      document.getElementById('l-label').value = l.label || ''
+      document.getElementById('l-url').value = l.url || ''
+      document.getElementById('l-username').value = l.username || ''
+      document.getElementById('l-icon').value = ICONS[l.icon] ? l.icon : 'link'
+      document.getElementById('addTitle').textContent = 'Edit Link'
+      document.getElementById('addBtn').querySelector('.btn-label').textContent = '💾 Simpan Perubahan'
+      document.getElementById('cancelEdit').classList.remove('hidden')
+      document.getElementById('addBtn').scrollIntoView({ behavior: 'smooth', block: 'center' })
+      toast('Mode edit: ubah lalu simpan')
+    }
+
+    document.getElementById('cancelEdit').addEventListener('click', () => {
+      resetAddForm()
     })
 
-    document.getElementById('addLink').addEventListener('click', async () => {
-      const label = document.getElementById('l-label').value
-      const url = document.getElementById('l-url').value
-      const username = document.getElementById('l-username').value
-      const icon = document.getElementById('l-icon').value
-      if (!label || !url) { alert('Label & URL wajib diisi'); return }
-      await fetch('/api/links', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ label, url, username, icon })
-      })
+    function resetAddForm() {
+      document.getElementById('editId').value = ''
       document.getElementById('l-label').value = ''
       document.getElementById('l-url').value = ''
       document.getElementById('l-username').value = ''
-      renderLinks()
-    })
+      document.getElementById('l-icon').value = 'tiktok'
+      document.getElementById('addTitle').textContent = 'Tambah Link'
+      document.getElementById('addBtn').querySelector('.btn-label').textContent = '＋ Tambah Link'
+      document.getElementById('cancelEdit').classList.add('hidden')
+    }
 
-    renderLinks()
+    async function saveProfile() {
+      const btn = document.getElementById('saveProfile')
+      const label = btn.querySelector('.btn-label')
+      btn.disabled = true
+      label.textContent = '⏳ Menyimpan...'
+      try {
+        await api('/api/profile', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: document.getElementById('p-name').value,
+            handle: document.getElementById('p-handle').value,
+            bio: document.getElementById('p-bio').value,
+            avatar_url: document.getElementById('p-avatar').value
+          })
+        })
+        updateAvatarPreview()
+        document.getElementById('profileStatus').textContent = 'Tersimpan ✓'
+        toast('Profil tersimpan')
+      } catch (e) {
+        toast(e.message, 'error')
+      } finally {
+        btn.disabled = false
+        label.textContent = '💾 Simpan Profil'
+      }
+    }
+
+    function updateAvatarPreview() {
+      const url = document.getElementById('p-avatar').value.trim()
+      const img = document.getElementById('avatarImg')
+      const emo = document.getElementById('pfEmoji')
+      if (url) {
+        img.src = url
+        img.style.display = ''
+        emo.style.display = 'none'
+      } else {
+        img.style.display = 'none'
+        emo.style.display = 'flex'
+      }
+    }
+
+    document.getElementById('saveProfile').addEventListener('click', saveProfile)
+    document.getElementById('avatarPreview').addEventListener('click', () => {
+      document.getElementById('p-avatar').focus()
+    })
+    document.getElementById('p-avatar').addEventListener('blur', updateAvatarPreview)
+
+    async function addOrEditLink() {
+      const editId = document.getElementById('editId').value
+      const label = document.getElementById('l-label').value.trim()
+      const url = document.getElementById('l-url').value.trim()
+      if (!label || !url) { toast('Label & URL wajib diisi', 'error'); return }
+
+      const btn = document.getElementById('addBtn')
+      const btnLabel = btn.querySelector('.btn-label')
+      btn.disabled = true
+      btnLabel.textContent = '⏳ Menyimpan...'
+
+      const payload = {
+        label,
+        url,
+        username: document.getElementById('l-username').value.trim(),
+        icon: document.getElementById('l-icon').value
+      }
+
+      try {
+        if (editId) {
+          await api('/api/links/' + editId, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          })
+          toast('Link diperbarui')
+          resetAddForm()
+        } else {
+          await api('/api/links', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          })
+          toast('Link ditambahkan')
+          resetAddForm()
+        }
+        await renderLinks()
+      } catch (e) {
+        toast(e.message, 'error')
+      } finally {
+        btn.disabled = false
+        btnLabel.textContent = editId ? '💾 Simpan Perubahan' : '＋ Tambah Link'
+      }
+    }
+
+    document.getElementById('addBtn').addEventListener('click', addOrEditLink)
+    document.getElementById('year').textContent = new Date().getFullYear()
+
+    ;(async () => {
+      try {
+        await renderLinks()
+      } catch (e) { toast('Gagal memuat data', 'error') }
+    })()
   </script>
 </body>
 </html>
