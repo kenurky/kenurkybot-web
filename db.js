@@ -68,7 +68,7 @@ async function saveProfile(patch) {
 // ===== Links =====
 async function getLinks() {
   if (isSb()) {
-    return await sb('links?select=*&order=id', 'GET')
+    return await sb('kenurky?select=*&order=id', 'GET')
   }
   return readJson().links
 }
@@ -76,7 +76,7 @@ async function getLinks() {
 async function addLink(link) {
   const row = { id: link.id || 'link-' + Date.now(), ...link }
   if (isSb()) {
-    const rows = await sb('links', 'POST', row)
+    const rows = await sb('kenurky', 'POST', row)
     return (Array.isArray(rows) ? rows[0] : rows) || row
   }
   const data = readJson()
@@ -87,7 +87,7 @@ async function addLink(link) {
 
 async function updateLink(id, patch) {
   if (isSb()) {
-    const rows = await sb(`links?id=eq.${id}`, 'PATCH', patch)
+    const rows = await sb(`kenurky?id=eq.${id}`, 'PATCH', patch)
     return (Array.isArray(rows) ? rows[0] : rows) || patch
   }
   const data = readJson()
@@ -100,7 +100,7 @@ async function updateLink(id, patch) {
 
 async function deleteLink(id) {
   if (isSb()) {
-    await sb(`links?id=eq.${id}`, 'DELETE')
+    await sb(`kenurky?id=eq.${id}`, 'DELETE')
     return true
   }
   const data = readJson()
