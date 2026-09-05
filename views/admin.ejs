@@ -360,7 +360,7 @@
         } else if (msg === 'empty') {
           toast('Foto tsb tidak valid', 'error')
         } else {
-          toast('Gagal memproses gambar', 'error')
+          toast('Gagal memproses gambar' + (msg ? ' (' + msg + ')' : ''), 'error')
         }
       })
     }
