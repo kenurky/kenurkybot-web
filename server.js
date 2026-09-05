@@ -1,10 +1,35 @@
 import express from 'express'
+import { createHash } from 'crypto'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { getProfile, saveProfile, getLinks, addLink, updateLink, deleteLink } from './db.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const PORT = process.env.PORT || 3000
+
+const ADMIN_PASS = process.env.ADMIN_PASS || 'kenurkybot7'
+const ADMIN_COOKIE = 'kenurky_admin'
+const AUTH_TOKEN = createHash('sha256').update('kenurky:' + ADMIN_PASS).digest('hex')
+
+function parseCookies(req) {
+  const out = {}
+  const raw = req.headers.cookie || ''
+  for (const part of raw.split(';')) {
+    const i = part.indexOf('=')
+    if (i > -1) out[part.slice(0, i).trim()] = decodeURIComponent(part.slice(i + 1).trim())
+  }
+  return out
+}
+
+function isAuthed(req) {
+  return parseCookies(req)[ADMIN_COOKIE] === AUTH_TOKEN
+}
+
+function requireAuth(req, res, next) {
+  if (isAuthed(req)) return next()
+  if (req.method !== 'GET') return res.status(401).json({ ok: false, error: 'unauthorized' })
+  res.redirect('/admin/login')
+}
 
 const app = express()
 app.use(express.json())
@@ -64,8 +89,27 @@ function deteksiOperator(nomor) {
   return 'Operator tidak diketahui'
 }
 
+// ===== Halaman login admin =====
+app.get('/admin/login', (req, res) => {
+  if (isAuthed(req)) return res.redirect('/admin')
+  res.render('login')
+})
+
+app.post('/admin/login', express.urlencoded({ extended: false }), (req, res) => {
+  if (req.body?.password === ADMIN_PASS) {
+    res.setHeader('Set-Cookie', `${ADMIN_COOKIE}=${AUTH_TOKEN}; Path=/; HttpOnly; Max-Age=2592000`)
+    return res.redirect('/admin')
+  }
+  res.status(401).render('login', { error: 'Password salah!' })
+})
+
+app.get('/admin/logout', (req, res) => {
+  res.setHeader('Set-Cookie', `${ADMIN_COOKIE}=; Path=/; Max-Age=0`)
+  res.redirect('/admin/login')
+})
+
 // ===== Admin panel =====
-app.get('/admin', async (req, res) => {
+app.get('/admin', requireAuth, async (req, res) => {
   try {
     const [profile, links] = await Promise.all([getProfile(), getLinks()])
     res.render('admin', { data: { profile, links } })
@@ -74,12 +118,12 @@ app.get('/admin', async (req, res) => {
   }
 })
 
-app.get('/api/data', async (req, res) => {
+app.get('/api/data', requireAuth, async (req, res) => {
   const [profile, links] = await Promise.all([getProfile(), getLinks()])
   res.json({ profile, links })
 })
 
-app.post('/api/links', async (req, res) => {
+app.post('/api/links', requireAuth, async (req, res) => {
   try {
     const link = await addLink(req.body)
     res.json({ ok: true, link })
@@ -88,7 +132,7 @@ app.post('/api/links', async (req, res) => {
   }
 })
 
-app.put('/api/links/:id', async (req, res) => {
+app.put('/api/links/:id', requireAuth, async (req, res) => {
   try {
     const link = await updateLink(req.params.id, req.body)
     if (!link) return res.status(404).json({ ok: false, error: 'not found' })
@@ -98,7 +142,7 @@ app.put('/api/links/:id', async (req, res) => {
   }
 })
 
-app.delete('/api/links/:id', async (req, res) => {
+app.delete('/api/links/:id', requireAuth, async (req, res) => {
   try {
     await deleteLink(req.params.id)
     res.json({ ok: true })
@@ -107,7 +151,7 @@ app.delete('/api/links/:id', async (req, res) => {
   }
 })
 
-app.put('/api/profile', async (req, res) => {
+app.put('/api/profile', requireAuth, async (req, res) => {
   try {
     const profile = await saveProfile(req.body)
     res.json({ ok: true, profile })

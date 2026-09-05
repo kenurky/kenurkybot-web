@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login • KenurkyBot</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .login-box {
+      background: rgba(0, 20, 40, 0.7);
+      border: 1px solid var(--cyan);
+      border-radius: 12px;
+      padding: 28px;
+      box-shadow: 0 0 30px rgba(0, 229, 255, 0.25);
+    }
+    .login-box h2 {
+      margin: 0 0 6px;
+      color: var(--cyan);
+      text-shadow: 0 0 12px rgba(0, 229, 255, 0.8);
+    }
+    .login-box p { margin: 0 0 18px; color: #8fb3c9; font-size: 14px; }
+    .login-box input {
+      width: 100%;
+      box-sizing: border-box;
+      margin-bottom: 14px;
+      padding: 12px 14px;
+      font-size: 15px;
+      color: var(--white);
+      background: rgba(0, 10, 25, 0.8);
+      border: 1px solid var(--cyan);
+      border-radius: 8px;
+      outline: none;
+    }
+    .login-box input:focus { box-shadow: 0 0 15px rgba(0, 229, 255, 0.5); }
+    .login-box button {
+      width: 100%;
+      padding: 12px;
+      font-size: 15px;
+      font-weight: bold;
+      color: #03101a;
+      background: var(--cyan);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 0 18px rgba(0, 229, 255, 0.45);
+    }
+    .login-box button:active { transform: scale(0.98); }
+    .login-box .error {
+      color: #ff5c7a;
+      font-size: 13px;
+      margin-bottom: 12px;
+      text-shadow: 0 0 8px rgba(255, 92, 122, 0.6);
+    }
+    .login-box .back {
+      display: block;
+      margin-top: 16px;
+      text-align: center;
+      color: #8fb3c9;
+      text-decoration: none;
+      font-size: 13px;
+    }
+    .login-box .back:hover { color: var(--cyan); }
+  </style>
+</head>
+<body>
+  <div class="scanline"></div>
+  <main class="container" style="justify-content:center;">
+    <div class="login-box">
+      <h2>🔐 ADMIN</h2>
+      <p>Masukkan password untuk mengakses panel admin.</p>
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div class="error"><%= error %></div>
+      <% } %>
+      <form method="POST" action="/admin/login">
+        <input type="password" name="password" placeholder="Password" autofocus autocomplete="current-password">
+        <button type="submit">Masuk</button>
+      </form>
+      <a class="back" href="/">← Kembali ke halaman utama</a>
+    </div>
+  </main>
+</body>
+</html>
