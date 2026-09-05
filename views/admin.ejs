@@ -351,17 +351,34 @@
         btn.disabled = false
         document.getElementById('profileStatus').textContent = 'Foto dipilih — Simpan'
         toast('Foto dipilih — klik Simpan Profil')
-      }).catch(err => {
+      }).catch(async err => {
         btn.textContent = '📁 Pilih dari Galeri'
         btn.disabled = false
         const msg = err && err.message
-        if (msg === 'decode') {
-          toast('Format foto tidak didukung (coba JPG/PNG)', 'error')
-        } else if (msg === 'empty') {
-          toast('Foto tsb tidak valid', 'error')
+        if (msg === 'decode' || msg === 'empty') {
+          // resize gagal (HEIC / browser tak bisa decode) — coba pakai file asli utuh
+          try {
+            const raw = await fileToDataUrl(file)
+            if (!raw) throw new Error('raw')
+            document.getElementById('p-avatar').value = raw
+            updateAvatarPreview()
+            document.getElementById('profileStatus').textContent = 'Foto dipilih (asli) — Simpan'
+            toast('Foto dipakai apa adanya — klik Simpan Profil')
+          } catch (e2) {
+            toast('Foto tidak bisa dibaca browser (coba ubah ke JPG)', 'error')
+          }
         } else {
           toast('Gagal memproses gambar' + (msg ? ' (' + msg + ')' : ''), 'error')
         }
+      })
+    }
+
+    function fileToDataUrl(file) {
+      return new Promise((resolve) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(reader.result)
+        reader.onerror = () => resolve(null)
+        reader.readAsDataURL(file)
       })
     }
 
