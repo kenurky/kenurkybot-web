@@ -319,6 +319,15 @@ textarea.afield { resize: vertical; min-height: 74px; }
   color: #fff; box-shadow: 0 6px 20px rgba(255, 92, 122, 0.3);
 }
 
+.avatar-upload-row {
+  display: flex; gap: 10px; flex-wrap: wrap;
+}
+.avatar-hint {
+  display: block; margin-top: 8px;
+  font-size: 11px; line-height: 1.45;
+  color: rgba(240, 247, 255, 0.4);
+}
+
 /* ===== Responsive ===== */
 @media (max-width: 640px) {
   .admin-inner { padding: 18px 14px 40px; }

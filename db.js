@@ -61,7 +61,8 @@ async function saveProfile(patch) {
   if (isSb()) {
     const existing = await getProfile()
     const data = { id: existing.id || 'main', ...existing, ...patch }
-    const rows = await sb('profile', existing.id ? 'PATCH' : 'POST', data)
+    const id = existing.id || 'main'
+    const rows = await sb(`profile?id=eq.${id}`, 'PATCH', data)
     return (Array.isArray(rows) ? rows[0] : rows) || data
   }
   const data = readJson()
