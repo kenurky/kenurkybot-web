@@ -39,13 +39,9 @@
             <span class="card-hint" id="profileStatus">Tersimpan ✓</span>
           </div>
           <div class="profile-body">
-            <div class="profile-preview clickable" id="avatarPreview" title="Klik untuk pilih URL avatar">
-              <% if (data.profile.avatar_url) { %>
-                <img src="<%= data.profile.avatar_url %>" alt="avatar" id="avatarImg" onerror="this.style.display='none';document.getElementById('pfEmoji').style.display='flex'">
-                <span class="pf-emoji" id="pfEmoji" style="display:none">🤖</span>
-              <% } else { %>
-                <span class="pf-emoji" id="pfEmoji">🤖</span>
-              <% } %>
+            <div class="profile-preview clickable" id="avatarPreview" title="Klik untuk pilih foto">
+              <img src="<%= data.profile.avatar_url || '' %>" alt="avatar" id="avatarImg" style="<%= data.profile.avatar_url ? 'display:block' : 'display:none' %>" onerror="this.style.display='none';document.getElementById('pfEmoji').style.display='flex'">
+              <span class="pf-emoji" id="pfEmoji" style="<%= data.profile.avatar_url ? 'display:none' : 'display:flex' %>">🤖</span>
               <span class="pf-change">UBAH</span>
             </div>
 
@@ -307,11 +303,13 @@
       const url = document.getElementById('p-avatar').value.trim()
       const img = document.getElementById('avatarImg')
       const emo = document.getElementById('pfEmoji')
+      if (!img || !emo) return
       if (url) {
         img.src = url
-        img.style.display = ''
+        img.style.display = 'block'
         emo.style.display = 'none'
       } else {
+        img.removeAttribute('src')
         img.style.display = 'none'
         emo.style.display = 'flex'
       }
