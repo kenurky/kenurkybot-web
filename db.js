@@ -5,8 +5,8 @@ import { fileURLToPath } from 'url'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const DATA_FILE = join(__dirname, 'data/links.json')
 
-const SUPABASE_URL = process.env.SUPABASE_URL
-const SUPABASE_KEY = process.env.SUPABASE_KEY
+const SUPABASE_URL = 'https://uvqepasdunhexecoghbu.supabase.co'
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV2cWVwYXNkdW5oZXhlY29naGJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg1MTU3MjQsImV4cCI6MjEwNDA5MTcyNH0.T-NvV3ATpW9L9JXWCQIeja_69pev7gKJQtpmvUvckEg'
 
 const DEFAULT_PROFILE = {
   name: 'KenurkyBot',
@@ -18,7 +18,12 @@ const DEFAULT_LINKS = []
 
 function env(k) {
   // dukung penamaan ganda
-  return process.env[k] || process.env[k.toLowerCase().replace('_', '')]
+  return process.env[k] || process.env[k.toLowerCase().replace('_', '')] || supabaseDefaults[k]
+}
+const supabaseDefaults = {
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY: SUPABASE_KEY,
+  SUPABASE_KEY
 }
 const sbUrl = env('SUPABASE_URL')
 const sbKey = env('SUPABASE_ANON_KEY') || env('SUPABASE_KEY')
