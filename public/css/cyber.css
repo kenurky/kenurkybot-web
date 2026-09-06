@@ -131,8 +131,9 @@ body {
 .hero-art {
   position: absolute; left: 50%; bottom: 0; transform: translateX(-50%);
   width: 300px; opacity: 0.9;
-  filter: drop-shadow(0 0 22px rgba(0, 229, 255, 0.28));
+  animation: spinSlow 40s linear infinite;
 }
+@keyframes spinSlow { from { transform: translateX(-50%) rotate(0deg); } to { transform: translateX(-50%) rotate(360deg); } }
 .hero-art .sil { width: 100%; display: block; }
 
 /* ===== Avatar ring + status ===== */
