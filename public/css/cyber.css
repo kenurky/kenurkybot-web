@@ -147,6 +147,23 @@ body {
   50% { transform: translate(-50%, -50%) scale(1.12); opacity: 1; }
 }
 
+/* ===== Clock / date / temp (Bandung) ===== */
+.clock-card {
+  position: relative; z-index: 2;
+  margin-bottom: 18px;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 12px 26px;
+  border-radius: 16px;
+  font-family: 'Share Tech Mono', monospace;
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.10), rgba(0, 119, 255, 0.05));
+  border: 1px solid rgba(0, 229, 255, 0.28);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.12), inset 0 0 14px rgba(0, 229, 255, 0.05);
+}
+.clock-card .time { font-size: 31px; font-weight: 700; color: var(--cyan); text-shadow: 0 0 14px rgba(0,229,255,0.55); }
+.clock-card .date { font-size: 13px; letter-spacing: 2px; color: var(--gray); text-transform: uppercase; }
+.clock-card .temp { font-size: 14px; letter-spacing: 1px; color: var(--cyan-soft); }
+
 /* ===== Avatar ring + status ===== */
 .avatar-ring {
   position: relative; z-index: 2;

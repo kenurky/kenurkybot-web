@@ -72,6 +72,13 @@ const urlFor = (k) => (data.links.find(l => l.icon === k) && data.links.find(l =
       <div class="aura"></div>
     </div>
 
+    <!-- Jam / Tanggal / Suhu Bandung -->
+    <div class="clock-card">
+      <span class="clock time" id="clkTime">--:--</span>
+      <span class="clock date" id="clkDate">--</span>
+      <span class="clock temp" id="clkTemp">🌡 --°C</span>
+    </div>
+
     <!-- Profil -->
     <div class="avatar-ring">
       <div class="avatar">
@@ -189,5 +196,56 @@ const urlFor = (k) => (data.links.find(l => l.icon === k) && data.links.find(l =
     })()
   </script>
   <script src="https://www.youtube.com/iframe_api"></script>
+
+  <script>
+    (function () {
+      var timeEl = document.getElementById('clkTime')
+      var dateEl = document.getElementById('clkDate')
+      var tempEl = document.getElementById('clkTemp')
+
+      var DAYS = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
+      var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
+
+      function pad(n) { return (n < 10 ? '0' : '') + n }
+
+      function tick() {
+        var now = new Date()
+        var opts = { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }
+        try {
+          var parts = new Intl.DateTimeFormat('en-GB', opts).formatToParts(now)
+          var h, m, s
+          parts.forEach(function (p) {
+            if (p.type === 'hour') h = p.value
+            else if (p.type === 'minute') m = p.value
+            else if (p.type === 'second') s = p.value
+          })
+          timeEl.textContent = h + ':' + m + ':' + s
+        } catch (e) {
+          timeEl.textContent = pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds())
+        }
+
+        try {
+          var f = new Intl.DateTimeFormat('id-ID', { timeZone: 'Asia/Jakarta', weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })
+          dateEl.textContent = f.format(now)
+        } catch (e) {
+          dateEl.textContent = DAYS[now.getDay()] + ', ' + pad(now.getDate()) + ' ' + MONTHS[now.getMonth()] + ' ' + now.getFullYear()
+        }
+      }
+
+      tick()
+      setInterval(tick, 1000)
+
+      // Suhu Bandung via Open-Meteo (gratis, tanpa API key)
+      fetch('https://api.open-meteo.com/v1/forecast?latitude=-6.9175&longitude=107.6191&current_weather=true')
+        .then(function (r) { return r.json() })
+        .then(function (d) {
+          var c = d && d.current_weather && d.current_weather.temperature
+          if (c !== undefined && c !== null) {
+            tempEl.textContent = '🌡 ' + Math.round(c) + '°C  Bandung'
+          }
+        })
+        .catch(function () {})
+    })()
+  </script>
 </body>
 </html>
