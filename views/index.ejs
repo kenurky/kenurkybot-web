@@ -150,10 +150,11 @@ const urlFor = (k) => (data.links.find(l => l.icon === k) && data.links.find(l =
       window.onYouTubeIframeAPIReady = function () {
         if (!window.YT || !window.YT.Player) return
         yt = new YT.Player('ytBox', {
-          videoId: '9WHWkEJLKJM',
+          videoId: 'M7oZR-MTEZs',
           playerVars: {
             autoplay: 0, controls: 0, disablekb: 1, modestbranding: 1,
-            playsinline: 1, rel: 0, iv_load_policy: 3
+            playsinline: 1, rel: 0, iv_load_policy: 3,
+            loop: 1, playlist: 'M7oZR-MTEZs'
           },
           events: { onReady: function () { startMuted() }, onStateChange: onYtState }
         })
