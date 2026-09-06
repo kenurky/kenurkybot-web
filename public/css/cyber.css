@@ -175,43 +175,6 @@ body {
 }
 @keyframes pulse { 0%, 100% { box-shadow: 0 0 6px rgba(52,255,138,0.6); } 50% { box-shadow: 0 0 18px rgba(52,255,138,1); } }
 
-/* ===== Piringan Vinyl ===== */
-.disc-wrap {
-  position: relative; z-index: 2;
-  width: 128px; height: 128px; margin-top: 6px;
-}
-.vinyl {
-  position: absolute; left: 50%; top: 50%;
-  width: 176px; height: 176px;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  background:
-    repeating-radial-gradient(circle at center,
-      #0b1326 0px, #0b1326 5px,
-      #070d1f 5px, #070d1f 6px);
-  border: 1px solid rgba(0, 229, 255, 0.35);
-  box-shadow: 0 0 30px rgba(0, 229, 255, 0.25), inset 0 0 40px rgba(0, 0, 0, 0.85);
-}
-.vinyl::before {
-  content: ''; position: absolute; inset: 38%;
-  border-radius: 50%;
-  background: radial-gradient(circle, #00e5ff 0%, #0077ff 45%, transparent 72%);
-  opacity: 0.16;
-}
-.vinyl-shine {
-  position: absolute; inset: 0; border-radius: 50%;
-  background: linear-gradient(135deg, rgba(0, 229, 255, 0.10), transparent 40%, transparent 65%, rgba(255, 255, 255, 0.05));
-}
-.vinyl { animation: vinylspin 3.5s linear infinite; animation-play-state: paused; }
-body.playing .vinyl { animation-play-state: running; }
-@keyframes vinylspin { to { transform: translate(-50%, -50%) rotate(360deg); } }
-
-/* avatar-ring duduk di atas piringan */
-.disc-wrap .avatar-ring {
-  position: relative; width: 132px; height: 132px;
-  box-shadow: 0 0 40px rgba(0, 229, 255, 0.4);
-}
-
 /* ===== Song chip ===== */
 .song-chip {
   margin-top: 16px;

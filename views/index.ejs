@@ -70,19 +70,16 @@ const urlFor = (k) => (data.links.find(l => l.icon === k) && data.links.find(l =
       <div class="aura"></div>
     </div>
 
-    <!-- Profil + Piringan Vinyl -->
-    <div class="disc-wrap">
-      <div class="vinyl" aria-hidden="true"><div class="vinyl-shine"></div></div>
-      <div class="avatar-ring">
-        <div class="avatar">
-          <% if (data.profile.avatar_url) { %>
-            <img src="<%= data.profile.avatar_url %>" alt="avatar">
-          <% } else { %>
-            <span class="avatar-emoji">🤖</span>
-          <% } %>
-        </div>
-        <span class="status-dot"></span>
+    <!-- Profil -->
+    <div class="avatar-ring">
+      <div class="avatar">
+        <% if (data.profile.avatar_url) { %>
+          <img src="<%= data.profile.avatar_url %>" alt="avatar">
+        <% } else { %>
+          <span class="avatar-emoji">🤖</span>
+        <% } %>
       </div>
+      <span class="status-dot"></span>
     </div>
 
     <h2 class="name-script"><%= data.profile.name %></h2>
