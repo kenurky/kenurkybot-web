@@ -182,7 +182,7 @@ body {
 }
 .vinyl {
   position: absolute; left: 50%; top: 50%;
-  width: 320px; height: 320px;
+  width: 176px; height: 176px;
   transform: translate(-50%, -50%);
   border-radius: 50%;
   background:
@@ -190,7 +190,7 @@ body {
       #0b1326 0px, #0b1326 5px,
       #070d1f 5px, #070d1f 6px);
   border: 1px solid rgba(0, 229, 255, 0.35);
-  box-shadow: 0 0 44px rgba(0, 229, 255, 0.25), inset 0 0 60px rgba(0, 0, 0, 0.85);
+  box-shadow: 0 0 30px rgba(0, 229, 255, 0.25), inset 0 0 40px rgba(0, 0, 0, 0.85);
 }
 .vinyl::before {
   content: ''; position: absolute; inset: 38%;
