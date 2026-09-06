@@ -70,20 +70,29 @@ const urlFor = (k) => (data.links.find(l => l.icon === k) && data.links.find(l =
       <div class="aura"></div>
     </div>
 
-    <!-- Profil -->
-    <div class="avatar-ring">
-      <div class="avatar">
-        <% if (data.profile.avatar_url) { %>
-          <img src="<%= data.profile.avatar_url %>" alt="avatar">
-        <% } else { %>
-          <span class="avatar-emoji">🤖</span>
-        <% } %>
+    <!-- Profil + Piringan Vinyl -->
+    <div class="disc-wrap">
+      <div class="vinyl" aria-hidden="true"><div class="vinyl-shine"></div></div>
+      <div class="avatar-ring">
+        <div class="avatar">
+          <% if (data.profile.avatar_url) { %>
+            <img src="<%= data.profile.avatar_url %>" alt="avatar">
+          <% } else { %>
+            <span class="avatar-emoji">🤖</span>
+          <% } %>
+        </div>
+        <span class="status-dot"></span>
       </div>
-      <span class="status-dot"></span>
     </div>
 
     <h2 class="name-script"><%= data.profile.name %></h2>
     <div class="handle-pill"><%= data.profile.handle %></div>
+
+    <button class="song-chip" id="songChip" type="button" aria-label="Putar/Jeda lagu">
+      <span class="eq" id="eq" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="song-title" id="songTitle">IQRO' - Raim Laode</span>
+    </button>
+
     <p class="bio"><%= data.profile.bio %></p>
 
     <!-- Divider -->
@@ -119,5 +128,66 @@ const urlFor = (k) => (data.links.find(l => l.icon === k) && data.links.find(l =
       <p class="copyright">© 2026 <%= data.profile.name %> • Cyber style</p>
     </footer>
   </main>
+
+  <div id="ytBox" aria-hidden="true"></div>
+
+  <script>
+    (function () {
+      var chip = document.getElementById('songChip')
+      var eq = document.getElementById('eq')
+      var yt = null
+      var unlocked = false
+      var wasPlaying = false
+
+      function setPlayingUI(on) {
+        document.body.classList.toggle('playing', on)
+        chip.classList.toggle('on', on)
+      }
+
+      function onYtState(e) {
+        var PLAYING = 1, PAUSED = 2, ENDED = 0
+        if (e.data === PLAYING) setPlayingUI(true)
+        else if (e.data === PAUSED || e.data === ENDED) setPlayingUI(false)
+      }
+
+      window.onYouTubeIframeAPIReady = function () {
+        if (!window.YT || !window.YT.Player) return
+        yt = new YT.Player('ytBox', {
+          videoId: '9WHWkEJLKJM',
+          playerVars: {
+            autoplay: 0, controls: 0, disablekb: 1, modestbranding: 1,
+            playsinline: 1, rel: 0, iv_load_policy: 3
+          },
+          events: { onReady: function () { startMuted() }, onStateChange: onYtState }
+        })
+      }
+      function startMuted() {
+        if (!yt || !yt.playVideo) return
+        yt.mute()
+        yt.playVideo()
+      }
+      function unlockAudio() {
+        if (unlocked) return
+        unlocked = true
+        if (yt && yt.unMute) yt.unMute()
+        if (yt && yt.playVideo) yt.playVideo()
+        window.removeEventListener('pointerdown', unlockAudio)
+        window.removeEventListener('touchend', unlockAudio)
+        window.removeEventListener('keydown', unlockAudio)
+      }
+
+      chip.addEventListener('click', function () {
+        if (!yt) return
+        var PL = 1
+        if (yt.getPlayerState && yt.getPlayerState() === PL) yt.pauseVideo()
+        else { unlocked = true; yt.unMute(); yt.playVideo() }
+      })
+
+      window.addEventListener('pointerdown', unlockAudio)
+      window.addEventListener('touchend', unlockAudio)
+      window.addEventListener('keydown', unlockAudio)
+    })()
+  </script>
+  <script src="https://www.youtube.com/iframe_api"></script>
 </body>
 </html>
