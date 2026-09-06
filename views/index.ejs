@@ -98,8 +98,8 @@ const urlFor = (k) => (data.links.find(l => l.icon === k) && data.links.find(l =
     <!-- Links -->
     <div class="cards">
       <% data.links.forEach((link, i) => { %>
-        <% const internal = link.id === 'cek-lokasi'; %>
-        <a class="card" href="<%= internal ? '/lokasi' : link.url %>" <%= internal ? '' : 'target="_blank" rel="noopener"' %> style="--i:<%= i %>">
+        <% const internal = String(link.url || '').startsWith('/'); %>
+        <a class="card" href="<%= link.url %>" <%= internal ? '' : 'target="_blank" rel="noopener"' %> style="--i:<%= i %>">
           <span class="card-wm"><%- iconFor(link.icon) %></span>
           <span class="card-icon"><%- iconFor(link.icon) %></span>
           <span class="card-body">

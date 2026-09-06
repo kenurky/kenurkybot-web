@@ -50,6 +50,97 @@ app.get('/', async (req, res) => {
 // ===== Halaman cek lokasi nomor =====
 app.get('/lokasi', (req, res) => res.render('lokasi'))
 
+// ===== Halaman tools =====
+app.get('/tools', (req, res) => res.render('tools'))
+
+const TIKTOK_API_URL = 'https://anabot.my.id/api/download/tiktok'
+const TIKTOK_API_KEY = process.env.TIKTOK_API_KEY || 'freeApikey'
+const TIKTOK_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36'
+
+async function ambilDataTiktok(url) {
+  const params = { url, apikey: TIKTOK_API_KEY }
+  const errors = []
+
+  async function tryFetch(method, body, headers = {}) {
+    const res = await fetch(TIKTOK_API_URL, {
+      method,
+      headers: { 'User-Agent': TIKTOK_UA, ...headers },
+      body,
+      signal: AbortSignal.timeout(20_000)
+    })
+    if (!res.ok) throw new Error(`[${res.status}] ${await res.text()}`)
+    return res.json()
+  }
+
+  // Strategi 1: POST JSON
+  try {
+    return await tryFetch('POST', JSON.stringify(params), { 'Content-Type': 'application/json' })
+  } catch (e) { errors.push(`POST json: ${e.message}`) }
+
+  // Strategi 2: POST form-urlencoded
+  try {
+    const qs = Object.entries(params).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&')
+    return await tryFetch('POST', qs, { 'Content-Type': 'application/x-www-form-urlencoded' })
+  } catch (e) { errors.push(`POST form: ${e.message}`) }
+
+  // Strategi 3: GET query
+  try {
+    const qs = '?' + Object.entries(params).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&')
+    return await tryFetch('GET', null, {})
+  } catch (e) { errors.push(`GET query: ${e.message}`) }
+
+  throw new Error('Semua metode request gagal: ' + errors.join(' | '))
+}
+
+app.post('/api/tiktok', async (req, res) => {
+  try {
+    const url = (req.body?.url || '').trim()
+    if (!url) return res.json({ ok: false, error: 'Link TikTok wajib diisi' })
+    if (!/tiktok\.com|tiktok/i.test(url)) return res.json({ ok: false, error: 'Link bukan dari TikTok' })
+
+    const data = await ambilDataTiktok(url)
+    if (!data || data.success === false) {
+      return res.json({ ok: false, error: 'API TikTok gagal merespons. Coba link lain.', raw: data })
+    }
+
+    const isi = data.data ?? data.result ?? data
+    const result = isi.result ?? isi
+    const videoUrl = result?.nowatermark || result?.no_watermark || result?.video || result?.without_watermark || data?.video || result?.wm
+    const caption = result?.description || result?.title || result?.caption || ''
+    const thumbnail = result?.thumbnail || data?.thumbnail || ''
+
+    if (!videoUrl) {
+      return res.json({ ok: false, error: 'Tidak menemukan URL video (link mungkin tidak valid).', raw: data })
+    }
+
+    res.json({ ok: true, videoUrl, caption, thumbnail })
+  } catch (e) {
+    res.json({ ok: false, error: 'Error TikTok: ' + e.message })
+  }
+})
+
+app.get('/api/tiktok/dl', async (req, res) => {
+  try {
+    const videoUrl = req.query.url
+    if (!videoUrl || !/^https?:\/\//.test(videoUrl)) return res.status(400).json({ ok: false, error: 'URL tidak valid' })
+
+    const upstream = await fetch(videoUrl, {
+      headers: { 'User-Agent': TIKTOK_UA, 'Referer': 'https://www.tiktok.com/' },
+      redirect: 'follow',
+      signal: AbortSignal.timeout(60_000)
+    })
+    if (!upstream.ok) return res.status(502).json({ ok: false, error: 'Gagal mengambil video (HTTP ' + upstream.status + ')' })
+
+    const buffer = Buffer.from(await upstream.arrayBuffer())
+    res.set('Content-Type', 'video/mp4')
+    res.set('Content-Disposition', 'attachment; filename="tiktok-video.mp4"')
+    res.set('Content-Length', buffer.length)
+    res.send(buffer)
+  } catch (e) {
+    res.status(500).json({ ok: false, error: 'Download gagal: ' + e.message })
+  }
+})
+
 app.post('/api/lokasi', (req, res) => {
   const nomor = (req.body?.nomor || '').replace(/[^\d]/g, '')
   if (!nomor) return res.json({ ok: false, error: 'Nomor wajib diisi' })
