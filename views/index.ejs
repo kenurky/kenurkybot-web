@@ -3,16 +3,76 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= data.profile.name %> • Linktree</title>
-  <link rel="stylesheet" href="/css/style.css">
+  <title><%= data.profile.name %> • KenurKy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Great+Vibes&family=Rajdhani:wght@500;600;700&family=Rubik+Wet+Paint&family=Share+Tech+Mono&display=swap" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Great+Vibes&family=Rajdhani:wght@500;600;700&family=Rubik+Wet+Paint&family=Share+Tech+Mono&display=swap"></noscript>
+  <link rel="stylesheet" href="/css/cyber.css">
 </head>
 <body>
-  <div class="scanline"></div>
+  <div class="bg">
+    <div class="bg-grad"></div>
+    <svg class="circuit" viewBox="0 0 200 500" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M180 0 V120 h-60 v60 h-40 v140" fill="none" stroke="rgba(0,229,255,.10)" stroke-width="1.5"/>
+      <path d="M190 220 v90 h40 v120" fill="none" stroke="rgba(0,119,255,.10)" stroke-width="1.5"/>
+      <path d="M10 470 h90 v-60 h60" fill="none" stroke="rgba(0,229,255,.08)" stroke-width="1.5"/>
+      <circle cx="80" cy="120" r="2.5" fill="rgba(0,229,255,.5)"/>
+      <circle cx="140" cy="300" r="2.5" fill="rgba(0,229,255,.5)"/>
+      <circle cx="230" cy="340" r="2.5" fill="rgba(0,119,255,.6)"/>
+      <circle cx="100" cy="410" r="2.5" fill="rgba(0,229,255,.4)"/>
+    </svg>
+    <div class="particles">
+      <% for (let i = 0; i < 16; i++) { %>
+        <span style="--x:<%= (i * 37) % 100 %>%;--d:<%= 9 + (i % 7) %>s;--delay:<%= (i % 5) * 0.6 %>s"></span>
+      <% } %>
+    </div>
+    <div class="holo h1"></div>
+    <div class="holo h2"></div>
+    <div class="scanline"></div>
+  </div>
+
+  <% const IS = {
+    tiktok: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>',
+    instagram: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1.2" fill="currentColor" stroke="none"/></svg>',
+    whatsapp: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm0 18.22c-1.48 0-2.93-.4-4.19-1.16l-.3-.18-3.12.82.83-3.04-.2-.31a8.26 8.26 0 0 1-1.26-4.44c0-4.54 3.7-8.24 8.24-8.24 4.54 0 8.24 3.7 8.24 8.24s-3.7 8.31-8.24 8.31zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.78.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.14.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.43.06-.66.31-.22.25-.86.85-.86 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.15-1.18-.06-.1-.23-.16-.48-.29z"/></svg>',
+    telegram: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M22.08 2.58a1 1 0 0 0-1.06.16L1.8 11.85c-.57.25-.86.9-.66 1.48.19.57.74.94 1.34.9l4.68-.32 1.97 6.11c.16.5.57.85 1.07.95.08.02.16.03.24.03.42 0 .82-.2 1.07-.55l2.06-2.92 4.61 3.75c.34.27.77.37 1.19.25.42-.12.74-.44.89-.85l4.3-16.38a1 1 0 0 0-.48-1.12zM9.4 13.81l8.28-6.6-6.69 7.05-.12 2.75-1.47-3.2z"/></svg>',
+    location: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 21.5s-7.2-6.2-7.2-11a7.2 7.2 0 0 1 14.4 0c0 4.8-7.2 11-7.2 11z"/><circle cx="12" cy="10" r="2.6"/></svg>',
+    globe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.8 2.6 3.8 5.9 3.8 9s-1 6.4-3.8 9c-2.8-2.6-3.8-5.9-3.8-9s1-6.4 3.8-9z"/></svg>',
+    link: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1.5-1.5"/></svg>'
+  };
+  const iconFor = (k) => IS[k] || IS.link;
+  const SUB = {
+    location: 'Cek lokasi dari nomor telepon',
+    whatsapp: 'Gabung ke grup official',
+    instagram: 'Follow untuk update terbaru',
+    tiktok: 'Konten menarik & terbaru',
+    telegram: 'Join channel official'
+  };
+  const subFor = (l) => l.username ? '@' + l.username : (SUB[l.icon] || l.label.toLowerCase());
+  const HOMES = { whatsapp: 'https://wa.me', instagram: 'https://instagram.com', tiktok: 'https://tiktok.com', telegram: 'https://t.me' };
+  const urlFor = (k) => (data.links.find(l => l.icon === k) && data.links.find(l => l.icon === k).url) || HOMES[k];
+  const hairSvg = '<svg class="sil" viewBox="0 0 320 380" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="hairG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0a1433"/><stop offset=".55" stop-color="#060b20"/><stop offset="1" stop-color="#05081a"/></linearGradient><linearGradient id="sheenG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#00e5ff" stop-opacity=".85"/><stop offset=".5" stop-color="#0077ff" stop-opacity=".35"/><stop offset="1" stop-color="#00e5ff" stop-opacity=".05"/></linearGradient></defs><ellipse cx="160" cy="330" rx="125" ry="62" fill="rgba(0,229,255,.06)"/><path d="M160 16C102 16 58 50 56 116C54 176 72 210 95 234C72 260 58 298 64 342C76 370 112 362 138 332C146 339 154 343 160 343C166 343 174 339 182 332C208 362 244 370 256 342C262 298 248 260 225 234C248 210 266 176 264 116C262 50 218 16 160 16Z" fill="url(#hairG)" stroke="url(#sheenG)" stroke-width="2"/><path d="M92 118C86 190 96 236 118 266C106 290 96 316 100 338" fill="none" stroke="rgba(0,229,255,.30)" stroke-width="2" stroke-linecap="round"/><path d="M228 118C234 190 224 236 202 266C214 290 224 316 220 338" fill="none" stroke="rgba(0,229,255,.30)" stroke-width="2" stroke-linecap="round"/><path d="M118 92C130 56 190 56 202 92" fill="none" stroke="rgba(0,229,255,.55)" stroke-width="2.2" stroke-linecap="round"/></svg>';
+  %>
+  <div class="side-note">STAY<br>CONNECTED<br>WITH&nbsp;ME</div>
+
+  <header class="topbar">
+    <h1 class="logo">KENURKY</h1>
+    <div class="tagline">
+      <span class="crown">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 7l4 3 5-6 5 6 4-3v10H3V7z"/><path d="M6 18h12v1.5H6z"/></svg>
+      </span>
+      <span class="tagline-text">Small Steps Big Dreams</span>
+    </div>
+  </header>
 
   <main class="container">
-    <!-- Foto Profil -->
-    <div class="avatar-wrap">
-      <div class="avatar-glow"></div>
+    <div class="hero">
+      <div class="hero-art"><%- hairSvg %></div>
+    </div>
+
+    <!-- Profil -->
+    <div class="avatar-ring">
       <div class="avatar">
         <% if (data.profile.avatar_url) { %>
           <img src="<%= data.profile.avatar_url %>" alt="avatar">
@@ -20,55 +80,45 @@
           <span class="avatar-emoji">🤖</span>
         <% } %>
       </div>
+      <span class="status-dot"></span>
     </div>
 
-    <!-- Nama & Bio -->
-    <h1 class="name"><%= data.profile.name %></h1>
-    <p class="handle"><%= data.profile.handle %></p>
+    <h2 class="name-script"><%= data.profile.name %></h2>
+    <div class="handle-pill"><%= data.profile.handle %></div>
     <p class="bio"><%= data.profile.bio %></p>
 
-    <!-- Link Buttons -->
-    <div class="links">
+    <!-- Divider -->
+    <div class="divider"><span class="diamond"></span></div>
+
+    <!-- Links -->
+    <div class="cards">
       <% data.links.forEach((link, i) => { %>
-        <% if (link.id === 'cek-lokasi') { %>
-          <a class="link-btn" href="/lokasi" style="--i:<%= i %>">
-            <span class="link-icon">
-              <% if (link.icon === 'tiktok') { %><sonic class="i-tiktok">♫</sonic><% } %>
-              <% if (link.icon === 'instagram') { %><span class="i-instagram">◎</span><% } %>
-              <% if (link.icon === 'whatsapp') { %><span class="i-whatsapp">✆</span><% } %>
-              <% if (link.icon === 'location') { %><span class="i-location">⌖</span><% } %>
-            </span>
-            <span class="link-text">
-              <strong><%= link.label %></strong>
-              <% if (link.username) { %><small>@<%= link.username %></small><% } %>
-            </span>
-            <span class="link-arrow">→</span>
-          </a>
-        <% } else { %>
-          <a class="link-btn" href="<%= link.url %>" target="_blank" rel="noopener" style="--i:<%= i %>">
-            <span class="link-icon">
-              <% if (link.icon === 'tiktok') { %><span class="i-tiktok">♫</span><% } %>
-              <% if (link.icon === 'instagram') { %><span class="i-instagram">◎</span><% } %>
-              <% if (link.icon === 'whatsapp') { %><span class="i-whatsapp">✆</span><% } %>
-              <% if (link.icon === 'location') { %><span class="i-location">⌖</span><% } %>
-            </span>
-            <span class="link-text">
-              <strong><%= link.label %></strong>
-              <% if (link.username) { %><small>@<%= link.username %></small><% } %>
-            </span>
-            <span class="link-arrow">→</span>
-          </a>
-        <% } %>
+        <% const internal = link.id === 'cek-lokasi'; %>
+        <a class="card" href="<%= internal ? '/lokasi' : link.url %>" <%= internal ? '' : 'target="_blank" rel="noopener"' %> style="--i:<%= i %>">
+          <span class="card-wm"><%- iconFor(link.icon) %></span>
+          <span class="card-icon"><%- iconFor(link.icon) %></span>
+          <span class="card-body">
+            <strong class="card-title"><%= link.label %></strong>
+            <small class="card-sub"><%= subFor(link) %></small>
+          </span>
+          <span class="card-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 6l6 6-6 6"/></svg>
+          </span>
+        </a>
       <% }) %>
     </div>
 
+    <!-- Footer -->
     <footer class="footer">
-      <span class="copyright">© <span id="year"></span> <%= data.profile.name %> • Cyber cyber</span>
+      <div class="f-divider"></div>
+      <div class="socials">
+        <a class="social" href="<%= urlFor('whatsapp') %>" target="_blank" rel="noopener" aria-label="WhatsApp"><%- IS.whatsapp %></a>
+        <a class="social" href="<%= urlFor('instagram') %>" target="_blank" rel="noopener" aria-label="Instagram"><%- IS.instagram %></a>
+        <a class="social" href="<%= urlFor('tiktok') %>" target="_blank" rel="noopener" aria-label="TikTok"><%- IS.tiktok %></a>
+        <a class="social" href="<%= urlFor('telegram') %>" target="_blank" rel="noopener" aria-label="Telegram"><%- IS.telegram %></a>
+      </div>
+      <p class="copyright">© 2026 <%= data.profile.name %> • Cyber style</p>
     </footer>
   </main>
-
-  <script>
-    document.getElementById('year').textContent = new Date().getFullYear()
-  </script>
 </body>
 </html>
