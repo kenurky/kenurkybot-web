@@ -53,6 +53,13 @@
         <button id="ttAgain" class="tool-btn-ghost">↻ Download video lain</button>
       </div>
 
+      <div id="ttDone" class="tt-done hidden">
+        <div class="tt-done-mark">✓</div>
+        <p class="tt-done-title">Video Anda sudah terdownload</p>
+        <p class="tt-done-sub">File video sudah tersimpan di perangkat Anda.</p>
+        <button id="ttDoneClose" class="tool-btn-ghost">Tutup</button>
+      </div>
+
       <div id="ttError" class="tt-result hidden"><p class="hasil-error"></p></div>
     </div>
 
@@ -71,6 +78,8 @@
     const capEl = document.getElementById('ttCaption')
     const dlBtn = document.getElementById('ttDownload')
     const againBtn = document.getElementById('ttAgain')
+    const doneEl = document.getElementById('ttDone')
+    const doneClose = document.getElementById('ttDoneClose')
 
     function show(id) {
       confirmBtn.style.display = id === 'form' ? 'inline-flex' : 'none'
@@ -78,7 +87,30 @@
       loading.classList.toggle('hidden', id !== 'loading')
       resultEl.classList.toggle('hidden', id !== 'result')
       errEl.classList.toggle('hidden', id !== 'error')
+      doneEl.classList.toggle('hidden', id !== 'done')
     }
+
+    function showDone() {
+      show('done')
+      setTimeout(() => {
+        if (!doneEl.classList.contains('hidden')) {
+          videoEl.pause()
+          videoEl.removeAttribute('src')
+          videoEl.load()
+        }
+      }, 500)
+    }
+
+    dlBtn.addEventListener('click', () => {
+      // tampilkan notifikasi sukses setelah proses download dimulai
+      setTimeout(showDone, 1200)
+    })
+
+    doneClose.addEventListener('click', () => {
+      urlInput.value = ''
+      urlInput.focus()
+      show('form')
+    })
 
     confirmBtn.addEventListener('click', async () => {
       const url = urlInput.value.trim()
