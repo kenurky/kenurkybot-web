@@ -63,6 +63,45 @@
       <div id="ttError" class="tt-result hidden"><p class="hasil-error"></p></div>
     </div>
 
+    <div class="tool-card" id="igCard">
+      <div class="tool-head">
+        <span class="tool-icon" style="color:var(--pink)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.3" cy="6.7" r="1.2" fill="currentColor" stroke="none"/></svg>
+        </span>
+        <div class="tool-title-wrap">
+          <strong class="tool-title">Instagram Downloader</strong>
+          <small class="tool-sub">Download foto/video dari post &amp; reel Instagram</small>
+        </div>
+        <span class="tool-badge">#2</span>
+      </div>
+
+      <div class="tt-form" id="igForm">
+        <input type="url" id="igUrl" class="input" placeholder="Tempel link Instagram (instagram.com/p/...)" autocomplete="off">
+        <button id="igConfirm" class="tool-btn">Konfirmasi Link →</button>
+      </div>
+
+      <div id="igLoading" class="tt-result hidden">
+        <div class="spinner"></div>
+        <p>⏳ Konfirmasi & memproses media...</p>
+      </div>
+
+      <div id="igResult" class="hidden">
+        <p id="igHint" class="tt-caption">Centang media yang ingin didownload:</p>
+        <div class="ig-grid" id="igGrid"></div>
+        <button id="igDownload" class="tool-btn tt-download">⬇ Download</button>
+        <button id="igAgain" class="tool-btn-ghost">↻ Download post lain</button>
+      </div>
+
+      <div id="igDone" class="tt-done hidden">
+        <div class="tt-done-mark">✓</div>
+        <p class="tt-done-title">Media Anda sudah terdownload</p>
+        <p class="tt-done-sub">File yang Anda centang sudah tersimpan di perangkat.</p>
+        <button id="igDoneClose" class="tool-btn-ghost">Tutup</button>
+      </div>
+
+      <div id="igError" class="tt-result hidden"><p class="hasil-error"></p></div>
+    </div>
+
     <div style="height:24px"></div>
     <a href="/" class="tools-back" style="text-align:center">© KenurkyBot • Cyber style</a>
   </main>
@@ -155,6 +194,113 @@
     })
 
     urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') confirmBtn.click() })
+
+    // ===== Instagram =====
+    const igForm = document.getElementById('igForm')
+    const igUrl = document.getElementById('igUrl')
+    const igConfirm = document.getElementById('igConfirm')
+    const igLoading = document.getElementById('igLoading')
+    const igResult = document.getElementById('igResult')
+    const igGrid = document.getElementById('igGrid')
+    const igHint = document.getElementById('igHint')
+    const igDownloadBtn = document.getElementById('igDownload')
+    const igAgainBtn = document.getElementById('igAgain')
+    const igDoneEl = document.getElementById('igDone')
+    const igDoneClose = document.getElementById('igDoneClose')
+    const igErrorEl = document.getElementById('igError')
+    const igErrorMsg = igErrorEl.querySelector('.hasil-error')
+
+    let igItems = []
+
+    function igShow(id) {
+      igConfirm.style.display = id === 'form' ? 'inline-flex' : 'none'
+      igForm.style.display = id === 'form' ? 'flex' : 'none'
+      igLoading.classList.toggle('hidden', id !== 'loading')
+      igResult.classList.toggle('hidden', id !== 'result')
+      igErrorEl.classList.toggle('hidden', id !== 'error')
+      igDoneEl.classList.toggle('hidden', id !== 'done')
+    }
+
+    function renderIgGrid() {
+      igGrid.innerHTML = ''
+      igItems.forEach((item, i) => {
+        const box = document.createElement('div')
+        box.className = 'ig-item'
+        box.dataset.i = i
+        box.innerHTML =
+          '<span class="ig-badge">' + (i + 1) + '</span>' +
+          '<span class="ig-check">✓</span>' +
+          (item.isVideo
+            ? '<video src="' + item.url + '" muted playsinline preload="metadata"></video>'
+            : '<img src="' + item.url + '" alt="slide ' + (i + 1) + '" loading="lazy">')
+        box.addEventListener('click', () => box.classList.toggle('checked'))
+        igGrid.appendChild(box)
+      })
+      igHint.textContent = 'Centang media yang ingin didownload (' + igItems.length + ' slide ditemukan):'
+    }
+
+    igConfirm.addEventListener('click', async () => {
+      const url = igUrl.value.trim()
+      if (!url) { igUrl.focus(); return }
+      if (!/instagram\.com/i.test(url)) {
+        igErrorMsg.textContent = '⚠️ Link bukan dari Instagram.'
+        igShow('error')
+        return
+      }
+      igShow('loading')
+      try {
+        const res = await fetch('/api/ig?url=' + encodeURIComponent(url))
+        const d = await res.json()
+        if (!d.ok) {
+          igErrorMsg.textContent = '⚠️ ' + (d.error || 'Gagal memproses media.')
+          igShow('error')
+          return
+        }
+        igItems = d.items
+        renderIgGrid()
+        igShow('result')
+      } catch (e) {
+        igErrorMsg.textContent = '⚠️ Terjadi error. Coba lagi nanti.'
+        igShow('error')
+      }
+    })
+
+    igDownloadBtn.addEventListener('click', () => {
+      const selected = igItems.map((it, i) => ({ it, i }))
+        .filter(({ i }) => document.querySelector('.ig-item[data-i="' + i + '"]')?.classList.contains('checked'))
+      if (!selected.length) {
+        igErrorMsg.textContent = '⚠️ Centang dulu media yang mau didownload.'
+        igErrorEl.style.display = 'block'
+        igResult.style.display = 'none'
+        return
+      }
+      igErrorEl.style.display = 'none'
+      selected.forEach(({ it }, idx) => {
+        const ext = it.isVideo ? 'mp4' : 'jpg'
+        const a = document.createElement('a')
+        a.href = '/api/ig/dl?url=' + encodeURIComponent(it.url)
+        a.download = 'instagram-' + (idx + 1) + '.' + ext
+        setTimeout(() => { a.click() }, idx * 900)
+      })
+      setTimeout(() => {
+        igDoneEl.classList.remove('hidden')
+        igResult.classList.add('hidden')
+      }, Math.max(1400, selected.length * 900 + 300))
+    })
+
+    igAgainBtn.addEventListener('click', () => {
+      igUrl.value = ''
+      igUrl.focus()
+      igShow('form')
+    })
+
+    igDoneClose.addEventListener('click', () => {
+      igUrl.value = ''
+      igUrl.focus()
+      igShow('form')
+    })
+
+    igUrl.addEventListener('keydown', e => { if (e.key === 'Enter') igConfirm.click() })
   </script>
 </body>
 </html>

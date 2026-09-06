@@ -141,6 +141,74 @@ app.get('/api/tiktok/dl', async (req, res) => {
   }
 })
 
+// ===== Instagram downloader =====
+const IG_API_URL = 'https://anabot.my.id/api/download/instagram'
+
+function isVideoUrl(u) {
+  return /\.(mp4|m4v|mov)(\?|$)/i.test(u || '')
+}
+
+app.get('/api/ig', async (req, res) => {
+  try {
+    const url = (req.query.url || '').trim()
+    if (!url) return res.json({ ok: false, error: 'Link Instagram wajib diisi' })
+    if (!/instagram\.com/i.test(url)) return res.json({ ok: false, error: 'Link bukan dari Instagram' })
+
+    const apiRes = await fetch(IG_API_URL + '?' + new URLSearchParams({ url, apikey: TIKTOK_API_KEY }), {
+      headers: { accept: 'application/json', 'User-Agent': TIKTOK_UA },
+      signal: AbortSignal.timeout(20_000)
+    })
+    if (!apiRes.ok) return res.json({ ok: false, error: 'API Instagram gagal (HTTP ' + apiRes.status + ')' })
+    const data = await apiRes.json()
+
+    if (!data || data.success === false) {
+      return res.json({ ok: false, error: 'API Instagram gagal merespons.', raw: data })
+    }
+
+    const isi = data.data ?? data.result ?? data
+    const items = Array.isArray(isi?.result) ? isi.result
+      : Array.isArray(isi?.media) ? isi.media
+      : Array.isArray(isi) ? isi
+      : (isi?.url || isi?.thumbnail ? [isi] : [])
+
+    const mapped = items.map(it => ({
+      url: it?.url || it?.video || it?.image || it?.thumbnail || null,
+      isVideo: isVideoUrl(it?.url || it?.video || it?.image || it?.thumbnail)
+    })).filter(it => it.url)
+
+    if (!mapped.length) {
+      return res.json({ ok: false, error: 'Tidak menemukan media di response API.', raw: data })
+    }
+
+    res.json({ ok: true, total: mapped.length, items: mapped })
+  } catch (e) {
+    res.json({ ok: false, error: 'Error Instagram: ' + e.message })
+  }
+})
+
+app.get('/api/ig/dl', async (req, res) => {
+  try {
+    const mediaUrl = req.query.url
+    if (!mediaUrl || !/^https?:\/\//.test(mediaUrl)) return res.status(400).json({ ok: false, error: 'URL tidak valid' })
+
+    const upstream = await fetch(mediaUrl, {
+      headers: { 'User-Agent': TIKTOK_UA, 'Referer': 'https://www.instagram.com/' },
+      redirect: 'follow',
+      signal: AbortSignal.timeout(60_000)
+    })
+    if (!upstream.ok) return res.status(502).json({ ok: false, error: 'Gagal mengambil media (HTTP ' + upstream.status + ')' })
+
+    const buffer = Buffer.from(await upstream.arrayBuffer())
+    const isVideo = isVideoUrl(mediaUrl)
+    res.set('Content-Type', isVideo ? 'video/mp4' : 'image/jpeg')
+    res.set('Content-Disposition', 'attachment; filename="' + (isVideo ? 'instagram-video.mp4' : 'instagram-image.jpg') + '"')
+    res.set('Content-Length', buffer.length)
+    res.send(buffer)
+  } catch (e) {
+    res.status(500).json({ ok: false, error: 'Download gagal: ' + e.message })
+  }
+})
+
 app.post('/api/lokasi', (req, res) => {
   const nomor = (req.body?.nomor || '').replace(/[^\d]/g, '')
   if (!nomor) return res.json({ ok: false, error: 'Nomor wajib diisi' })
