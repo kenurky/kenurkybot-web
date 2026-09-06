@@ -39,6 +39,7 @@
     telegram: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M22.08 2.58a1 1 0 0 0-1.06.16L1.8 11.85c-.57.25-.86.9-.66 1.48.19.57.74.94 1.34.9l4.68-.32 1.97 6.11c.16.5.57.85 1.07.95.08.02.16.03.24.03.42 0 .82-.2 1.07-.55l2.06-2.92 4.61 3.75c.34.27.77.37 1.19.25.42-.12.74-.44.89-.85l4.3-16.38a1 1 0 0 0-.48-1.12zM9.4 13.81l8.28-6.6-6.69 7.05-.12 2.75-1.47-3.2z"/></svg>',
     location: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 21.5s-7.2-6.2-7.2-11a7.2 7.2 0 0 1 14.4 0c0 4.8-7.2 11-7.2 11z"/><circle cx="12" cy="10" r="2.6"/></svg>',
     globe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.8 2.6 3.8 5.9 3.8 9s-1 6.4-3.8 9c-2.8-2.6-3.8-5.9-3.8-9s1-6.4 3.8-9z"/></svg>',
+    tools: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M14.7 6.3a4.5 4.5 0 0 0-6.1 5.4L3 17.3a1.9 1.9 0 0 0 2.7 2.7l5.6-5.6a4.5 4.5 0 0 0 5.4-6.1l-3 3-2.3-2.3 3-3z"/><circle cx="18.5" cy="5.5" r="2.5"/></svg>',
     link: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1.5-1.5"/></svg>'
   };
   const iconFor = (k) => IS[k] || IS.link;
@@ -47,7 +48,8 @@
     whatsapp: 'Gabung ke grup official',
     instagram: 'Follow untuk update terbaru',
     tiktok: 'Konten menarik & terbaru',
-    telegram: 'Join channel official'
+    telegram: 'Join channel official',
+    tools: 'Tools serba ada'
   };
   const subFor = (l) => l.username ? '@' + l.username : (SUB[l.icon] || l.label.toLowerCase());
   const HOMES = { whatsapp: 'https://wa.me', instagram: 'https://instagram.com', tiktok: 'https://tiktok.com', telegram: 'https://t.me' };
