@@ -32,7 +32,7 @@ function requireAuth(req, res, next) {
 }
 
 const app = express()
-app.use(express.json())
+app.use(express.json({ limit: '20mb' }))
 app.use(express.static(join(__dirname, 'public')))
 app.set('view engine', 'ejs')
 app.set('views', join(__dirname, 'views'))
@@ -206,6 +206,60 @@ app.get('/api/ig/dl', async (req, res) => {
     res.send(buffer)
   } catch (e) {
     res.status(500).json({ ok: false, error: 'Download gagal: ' + e.message })
+  }
+})
+
+// ===== Remove background =====
+const REMOVEBG_API_URL = 'https://anabot.my.id/api/ai/removebg'
+const REMOVEBG_UPLOAD_URL = 'https://uguu.se/upload.php'
+const MAX_RBG_BYTES = 15 * 1024 * 1024
+
+async function uploadToHost(buffer) {
+  const form = new FormData()
+  form.append('files[]', new Blob([buffer], { type: 'image/png' }), 'foto.png')
+  const res = await fetch(REMOVEBG_UPLOAD_URL, { method: 'POST', body: form, signal: AbortSignal.timeout(30_000) })
+  const j = await res.json()
+  if (!res.ok || !j?.success || !j?.files?.[0]?.url) throw new Error(j?.e || 'upload ' + res.status)
+  return j.files[0].url
+}
+
+app.post('/api/removebg', async (req, res) => {
+  try {
+    const image = (req.body?.image || '').trim()
+    if (!image) return res.json({ ok: false, error: 'Foto wajib dipilih' })
+
+    let buffer
+    if (/^data:image\//.test(image)) {
+      const i = image.indexOf(',')
+      buffer = Buffer.from(image.slice(i + 1), 'base64')
+    } else if (/^data:/.test(image)) {
+      const i = image.indexOf(',')
+      buffer = Buffer.from(image.slice(i + 1), 'base64')
+    } else {
+      buffer = Buffer.from(image, 'base64')
+    }
+
+    if (!buffer.length) return res.json({ ok: false, error: 'Foto kosong / tidak valid' })
+    if (buffer.length > MAX_RBG_BYTES) return res.json({ ok: false, error: 'Foto terlalu besar (maks 15MB)' })
+
+    // Upload ke uguu.se → dapat URL publik
+    const hosted = await uploadToHost(buffer)
+    if (!hosted) return res.json({ ok: false, error: 'Gagal upload foto, coba lagi' })
+
+    // Panggil anabot removebg dengan URL foto
+    const apiUrl = REMOVEBG_API_URL + '?' + new URLSearchParams({ imageUrl: hosted, apikey: TIKTOK_API_KEY })
+    const rbgRes = await fetch(apiUrl, {
+      headers: { accept: 'application/json', 'User-Agent': TIKTOK_UA },
+      signal: AbortSignal.timeout(60_000)
+    })
+    const rbgJson = await rbgRes.json()
+    if (!rbgRes.ok || rbgJson?.success === false || !rbgJson?.data?.result) {
+      return res.json({ ok: false, error: (rbgJson?.error?.message) || 'API removebg gagal', raw: rbgJson })
+    }
+
+    res.json({ ok: true, resultUrl: rbgJson.data.result })
+  } catch (e) {
+    res.json({ ok: false, error: 'Gagal hapus background: ' + e.message })
   }
 })
 

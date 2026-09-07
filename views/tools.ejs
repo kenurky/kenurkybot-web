@@ -102,6 +102,47 @@
       <div id="igError" class="tt-result hidden"><p class="hasil-error"></p></div>
     </div>
 
+    <div class="tool-card" id="rbgCard">
+      <div class="tool-head">
+        <span class="tool-icon" style="color:var(--neon)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3h10l6 6v12H3z"/><path d="M13 3v6h6"/><path d="M8 13l2.5 2.5L8 18M14 13l-2.5 2.5L14 18"/></svg>
+        </span>
+        <div class="tool-title-wrap">
+          <strong class="tool-title">Hapus Background</strong>
+          <small class="tool-sub">Hilangkan background foto jadi transparan</small>
+        </div>
+        <span class="tool-badge">#3</span>
+      </div>
+
+      <div class="rbg-form" id="rbgForm">
+        <div class="rbg-preview" id="rbgPreview">
+          <img id="rbgImg" style="display:none" alt="preview">
+          <span class="rbg-placeholder" id="rbgPlaceholder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 16l4-4 3 3 3-3 6 6"/><circle cx="9" cy="9" r="1.6"/><rect x="3" y="3" width="18" height="18" rx="4"/></svg>
+            Klik untuk pilih foto
+          </span>
+        </div>
+        <input type="file" id="rbgFile" accept="image/*" style="display:none">
+        <p class="rbg-hint">Pilih foto dari galeri/HP kamu — sistemnya sama seperti ganti foto profil.</p>
+        <button id="rbgProcess" class="tool-btn">✨ Hapus Background →</button>
+      </div>
+
+      <div id="rbgLoading" class="tt-result hidden">
+        <div class="spinner"></div>
+        <p>⏳ Menghilangkan background...</p>
+      </div>
+
+      <div id="rbgResult" class="hidden">
+        <div class="rbg-result-wrap">
+          <img id="rbgResultImg" alt="hasil">
+        </div>
+        <a id="rbgDownload" class="tool-btn tt-download" download>⬇ Download PNG</a>
+        <button id="rbgAgain" class="tool-btn-ghost">↻ Proses foto lain</button>
+      </div>
+
+      <div id="rbgError" class="tt-result hidden"><p class="hasil-error"></p></div>
+    </div>
+
     <div style="height:24px"></div>
     <a href="/" class="tools-back" style="text-align:center">© KenurkyBot • Cyber style</a>
   </main>
@@ -301,6 +342,122 @@
     })
 
     igUrl.addEventListener('keydown', e => { if (e.key === 'Enter') igConfirm.click() })
+
+    // ===== Hapus Background =====
+    const rbgForm = document.getElementById('rbgForm')
+    const rbgPreview = document.getElementById('rbgPreview')
+    const rbgImg = document.getElementById('rbgImg')
+    const rbgPlaceholder = document.getElementById('rbgPlaceholder')
+    const rbgFile = document.getElementById('rbgFile')
+    const rbgProcess = document.getElementById('rbgProcess')
+    const rbgLoading = document.getElementById('rbgLoading')
+    const rbgResult = document.getElementById('rbgResult')
+    const rbgResultImg = document.getElementById('rbgResultImg')
+    const rbgDownload = document.getElementById('rbgDownload')
+    const rbgAgain = document.getElementById('rbgAgain')
+    const rbgErrorEl = document.getElementById('rbgError')
+    const rbgErrorMsg = rbgErrorEl.querySelector('.hasil-error')
+
+    let rbgDataUrl = null
+
+    function rbgShow(id) {
+      rbgForm.style.display = id === 'form' ? 'flex' : 'none'
+      rbgLoading.classList.toggle('hidden', id !== 'loading')
+      rbgResult.classList.toggle('hidden', id !== 'result')
+      rbgErrorEl.classList.toggle('hidden', id !== 'error')
+    }
+
+    function rbgSetPreview(dataUrl) {
+      rbgDataUrl = dataUrl
+      if (dataUrl) {
+        rbgImg.src = dataUrl
+        rbgImg.style.display = 'block'
+        rbgPlaceholder.style.display = 'none'
+        rbgProcess.textContent = '✨ Hapus Background →'
+        rbgProcess.disabled = false
+      } else {
+        rbgImg.removeAttribute('src')
+        rbgImg.style.display = 'none'
+        rbgPlaceholder.style.display = 'flex'
+        rbgProcess.textContent = 'Pilih foto dulu'
+        rbgProcess.disabled = true
+      }
+    }
+
+    function rbgResize(file, maxSize, quality) {
+      return new Promise((resolve, reject) => {
+        const url = URL.createObjectURL(file)
+        const img = new Image()
+        img.onerror = () => { setTimeout(() => URL.revokeObjectURL(url), 1000); reject(new Error('decode')) }
+        img.onload = () => {
+          setTimeout(() => URL.revokeObjectURL(url), 1000)
+          let w = img.width, h = img.height
+          if (!w || !h) { reject(new Error('empty')); return }
+          const scale = Math.min(1, maxSize / Math.max(w, h))
+          w = Math.round(w * scale)
+          h = Math.round(h * scale)
+          const canvas = document.createElement('canvas')
+          canvas.width = w
+          canvas.height = h
+          const ctx = canvas.getContext('2d')
+          ctx.drawImage(img, 0, 0, w, h)
+          resolve(canvas.toDataURL('image/png', quality || 0.9))
+        }
+        img.src = url
+      })
+    }
+
+    rbgPreview.addEventListener('click', () => rbgFile.click())
+    rbgFile.addEventListener('change', async (e) => {
+      const file = e.target.files && e.target.files[0]
+      if (!file) return
+      if (file.size > 15 * 1024 * 1024) {
+        rbgErrorMsg.textContent = '⚠️ File terlalu besar (maks 15MB).'
+        rbgShow('error')
+        return
+      }
+      try {
+        const dataUrl = await rbgResize(file, 1280, 0.9)
+        rbgSetPreview(dataUrl)
+        rbgProcess.textContent = '✨ Hapus Background →'
+      } catch (err) {
+        const msg = err && err.message
+        if (msg === 'decode' || msg === 'empty') {
+          rbgErrorMsg.textContent = '⚠️ Foto tidak bisa dibaca browser (coba ubah ke JPG/PNG).'
+          rbgShow('error')
+        }
+      }
+    })
+
+    rbgProcess.addEventListener('click', async () => {
+      if (!rbgDataUrl) { rbgFile.click(); return }
+      rbgShow('loading')
+      try {
+        const res = await fetch('/api/removebg', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: rbgDataUrl })
+        })
+        const d = await res.json()
+        if (!d.ok) {
+          rbgErrorMsg.textContent = '⚠️ ' + (d.error || 'Gagal hapus background.')
+          rbgShow('error')
+          return
+        }
+        rbgResultImg.src = d.resultUrl + '?t=' + Date.now()
+        rbgDownload.href = d.resultUrl
+        rbgShow('result')
+      } catch (e) {
+        rbgErrorMsg.textContent = '⚠️ Terjadi error. Coba lagi nanti.'
+        rbgShow('error')
+      }
+    })
+
+    rbgAgain.addEventListener('click', () => {
+      rbgFile.value = ''
+      rbgSetPreview(null)
+      rbgShow('form')
+    })
   </script>
 </body>
 </html>

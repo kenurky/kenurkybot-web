@@ -496,6 +496,34 @@ video { width: 100%; display: block; max-height: 60vh; }
 }
 .ig-item.checked .ig-badge { color: var(--neon); }
 
+.rbg-form { display: flex; flex-direction: column; gap: 14px; width: 100%; }
+.rbg-preview {
+  width: 100%; aspect-ratio: 1; max-width: 220px;
+  margin: 0 auto; border-radius: 18px; overflow: hidden; cursor: pointer;
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px dashed rgba(0, 229, 255, 0.4);
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.06), rgba(0, 119, 255, 0.04));
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.rbg-preview:hover { border-color: var(--cyan); box-shadow: 0 0 18px rgba(0, 229, 255, 0.25); }
+.rbg-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.rbg-placeholder {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  color: var(--gray); font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 13px;
+  letter-spacing: 0.5px; padding: 20px; text-align: center;
+}
+.rbg-placeholder svg { width: 42px; height: 42px; color: var(--cyan); opacity: 0.8; }
+.rbg-hint { font-size: 12.5px; color: var(--gray); text-align: center; }
+.rbg-result-wrap {
+  width: 100%; max-width: 300px; margin: 0 auto 14px;
+  border-radius: 16px; overflow: hidden;
+  border: 1px solid rgba(52, 255, 138, 0.35);
+  box-shadow: 0 0 22px rgba(52, 255, 138, 0.18);
+  background: repeating-conic-gradient(#131a2a 0 25%, #1b2438 0 50%) 0 0 / 22px 22px;
+}
+.rbg-result-wrap img { width: 100%; display: block; }
+
 .spinner {
   width: 46px; height: 46px; border-radius: 50%;
   border: 3px solid rgba(0, 229, 255, 0.2); border-top-color: var(--cyan);
