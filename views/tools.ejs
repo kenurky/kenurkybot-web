@@ -551,6 +551,8 @@
 
     let ytFormat = 'mp4'
     let ytLast = null
+    let ytPollTimer = null
+    const ytPollMax = 200
 
     function ytShow(id) {
       ytConfirm.style.display = id === 'form' ? 'inline-flex' : 'none'
@@ -559,6 +561,55 @@
       ytResult.classList.toggle('hidden', id !== 'result')
       ytErrorEl.classList.toggle('hidden', id !== 'error')
       ytDoneEl.classList.toggle('hidden', id !== 'done')
+    }
+
+    function ytStopPoll() {
+      if (ytPollTimer) { clearTimeout(ytPollTimer); ytPollTimer = null }
+    }
+
+    function ytApplyResult(d) {
+      ytLast = d
+      ytThumb.src = d.metadata.thumbnail || ''
+      if (d.metadata.thumbnail) {
+        ytThumb.style.display = 'block'
+        ytThumb.parentElement.style.display = 'block'
+      } else {
+        ytThumb.style.display = 'none'
+        ytThumb.parentElement.style.display = 'none'
+      }
+      ytDur.textContent = d.metadata.duration ? fmtYtDur(d.metadata.duration) : ''
+      ytTitle.textContent = d.metadata.title
+      ytChannel.textContent = d.metadata.channel ? '📺 ' + d.metadata.channel : ''
+      ytDownload.textContent = d.isAudio ? '⬇ Download MP3' : '⬇ Download MP4'
+      ytDownload.href = '/api/yt/dl?url=' + encodeURIComponent(d.mediaUrl) + '&type=' + (d.isAudio ? 'audio' : 'video')
+      ytShow('result')
+    }
+
+    function ytPoll(taskId, format, attempt) {
+      fetch('/api/yt/status?id=' + encodeURIComponent(taskId) + '&format=' + encodeURIComponent(format))
+        .then(r => r.json())
+        .then(d => {
+          if (!d.ok) {
+            ytErrorMsg.textContent = '⚠️ ' + (d.error || 'Gagal memproses.')
+            ytShow('error')
+            return
+          }
+          if (d.status === 'completed') { ytApplyResult(d); return }
+          if (attempt >= ytPollMax) {
+            ytErrorMsg.textContent = '⚠️ Proses terlalu lama. Coba lagi nanti (video panjang butuh waktu).'
+            ytShow('error')
+            return
+          }
+          ytPollTimer = setTimeout(() => ytPoll(taskId, format, attempt + 1), 3000)
+        })
+        .catch(() => {
+          if (attempt >= ytPollMax) {
+            ytErrorMsg.textContent = '⚠️ Proses terlalu lama. Coba lagi nanti (video panjang butuh waktu).'
+            ytShow('error')
+            return
+          }
+          ytPollTimer = setTimeout(() => ytPoll(taskId, format, attempt + 1), 3000)
+        })
     }
 
     ytToggle.forEach(btn => btn.addEventListener('click', () => {
@@ -601,21 +652,7 @@
           ytShow('error')
           return
         }
-        ytLast = d
-        ytThumb.src = d.metadata.thumbnail || ''
-        if (d.metadata.thumbnail) {
-          ytThumb.style.display = 'block'
-          ytThumb.parentElement.style.display = 'block'
-        } else {
-          ytThumb.style.display = 'none'
-          ytThumb.parentElement.style.display = 'none'
-        }
-        ytDur.textContent = d.metadata.duration ? fmtYtDur(d.metadata.duration) : ''
-        ytTitle.textContent = d.metadata.title
-        ytChannel.textContent = d.metadata.channel ? '📺 ' + d.metadata.channel : ''
-        ytDownload.textContent = d.isAudio ? '⬇ Download MP3' : '⬇ Download MP4'
-        ytDownload.href = '/api/yt/dl?url=' + encodeURIComponent(d.mediaUrl) + '&type=' + (d.isAudio ? 'audio' : 'video')
-        ytShow('result')
+        ytPoll(d.taskId, ytFormat, 1)
       } catch (e) {
         ytErrorMsg.textContent = '⚠️ Terjadi error. Coba lagi nanti.'
         ytShow('error')
@@ -627,12 +664,14 @@
     })
 
     ytAgain.addEventListener('click', () => {
+      ytStopPoll()
       ytUrl.value = ''
       ytUrl.focus()
       ytShow('form')
     })
 
     ytDoneClose.addEventListener('click', () => {
+      ytStopPoll()
       ytUrl.value = ''
       ytUrl.focus()
       ytShow('form')

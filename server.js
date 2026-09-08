@@ -289,10 +289,6 @@ app.get('/api/removebg/dl', async (req, res) => {
 const YT_MP4_URL = 'https://anabot.my.id/api/download/ytmp4'
 const YT_MP3_URL = 'https://anabot.my.id/api/download/ytmp3'
 const YT_STATUS_URL = 'https://anabot.my.id/api/download/status'
-const YT_POLL_MAX = 120
-const YT_POLL_INTERVAL = 4000
-
-const sleepYt = (ms) => new Promise(r => setTimeout(r, ms))
 
 app.post('/api/yt', async (req, res) => {
   try {
@@ -304,7 +300,6 @@ app.post('/api/yt', async (req, res) => {
     }
     const endpoint = format === 'mp3' ? YT_MP3_URL : YT_MP4_URL
 
-    // 1) Buat task di anabot
     const createRes = await fetch(endpoint + '?' + new URLSearchParams({ url, apikey: TIKTOK_API_KEY }), {
       headers: { accept: 'application/json', 'User-Agent': TIKTOK_UA },
       signal: AbortSignal.timeout(25_000)
@@ -315,35 +310,41 @@ app.post('/api/yt', async (req, res) => {
       return res.json({ ok: false, error: 'Gagal membuat proses YouTube.', raw: createJson })
     }
 
-    // 2) Poll status sampai completed / failed / timeout
-    const deadline = Date.now() + YT_POLL_MAX * YT_POLL_INTERVAL
-    let last = null
-    while (Date.now() < deadline) {
-      await sleepYt(YT_POLL_INTERVAL)
-      try {
-        const statusRes = await fetch(YT_STATUS_URL + '?' + new URLSearchParams({ id: taskId }), {
-          headers: { accept: 'application/json', 'User-Agent': TIKTOK_UA },
-          signal: AbortSignal.timeout(15_000)
-        })
-        const statusJson = await statusRes.json()
-        last = statusJson
-        if (statusJson?.status === 'completed' && statusJson?.data?.urls) break
-        if (statusJson?.status === 'failed' || statusJson?.success === false) {
-          return res.json({ ok: false, error: (statusJson?.error || 'Gagal memproses video.').trim(), raw: statusJson })
-        }
-      } catch (e) { /* toleransi error sementara, lanjut poll */ }
+    res.json({ ok: true, taskId, format })
+  } catch (e) {
+    res.json({ ok: false, error: 'Error YouTube: ' + e.message })
+  }
+})
+
+app.get('/api/yt/status', async (req, res) => {
+  try {
+    const taskId = (req.query.id || '').trim()
+    if (!taskId) return res.json({ ok: false, error: 'taskId wajib' })
+
+    const statusRes = await fetch(YT_STATUS_URL + '?' + new URLSearchParams({ id: taskId }), {
+      headers: { accept: 'application/json', 'User-Agent': TIKTOK_UA },
+      signal: AbortSignal.timeout(15_000)
+    })
+    const statusJson = await statusRes.json()
+
+    if (statusJson?.status === 'failed' || statusJson?.success === false) {
+      return res.json({ ok: false, error: (statusJson?.error || 'Gagal memproses video.').trim() })
+    }
+    if (statusJson?.status !== 'completed') {
+      return res.json({ ok: true, status: 'processing' })
     }
 
-    const hasil = last?.data
+    const hasil = statusJson?.data
     if (!hasil?.urls) {
-      return res.json({ ok: false, error: 'Proses terlalu lama, coba lagi nanti. (Video panjang butuh waktu)' , raw: last })
+      return res.json({ ok: false, error: 'Hasil proses tidak valid, coba lagi.' })
     }
 
     const md = hasil.metadata ?? {}
     const isAudio = hasil.type === 'AUDIO' || /audio/i.test(hasil.mimetype || '')
     res.json({
       ok: true,
-      format,
+      status: 'completed',
+      format: req.query.format === 'mp3' ? 'mp3' : 'mp4',
       isAudio,
       contentType: isAudio ? 'audio/mp4' : 'video/mp4',
       mediaUrl: hasil.urls,
@@ -356,7 +357,7 @@ app.post('/api/yt', async (req, res) => {
       }
     })
   } catch (e) {
-    res.json({ ok: false, error: 'Error YouTube: ' + e.message })
+    res.json({ ok: false, error: 'Error cek status: ' + e.message })
   }
 })
 
