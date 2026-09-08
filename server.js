@@ -263,6 +263,28 @@ app.post('/api/removebg', async (req, res) => {
   }
 })
 
+app.get('/api/removebg/dl', async (req, res) => {
+  try {
+    const imgUrl = req.query.url
+    if (!imgUrl || !/^https?:\/\//.test(imgUrl)) return res.status(400).json({ ok: false, error: 'URL tidak valid' })
+
+    const upstream = await fetch(imgUrl, {
+      headers: { 'User-Agent': TIKTOK_UA },
+      redirect: 'follow',
+      signal: AbortSignal.timeout(60_000)
+    })
+    if (!upstream.ok) return res.status(502).json({ ok: false, error: 'Gagal mengambil gambar (HTTP ' + upstream.status + ')' })
+
+    const buffer = Buffer.from(await upstream.arrayBuffer())
+    res.set('Content-Type', 'image/png')
+    res.set('Content-Disposition', 'attachment; filename="background-dihapus.png"')
+    res.set('Content-Length', buffer.length)
+    res.send(buffer)
+  } catch (e) {
+    res.status(500).json({ ok: false, error: 'Download gagal: ' + e.message })
+  }
+})
+
 app.post('/api/lokasi', (req, res) => {
   const nomor = (req.body?.nomor || '').replace(/[^\d]/g, '')
   if (!nomor) return res.json({ ok: false, error: 'Nomor wajib diisi' })

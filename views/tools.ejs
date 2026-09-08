@@ -445,7 +445,7 @@
           return
         }
         rbgResultImg.src = d.resultUrl + '?t=' + Date.now()
-        rbgDownload.href = d.resultUrl
+        rbgDownload.href = '/api/removebg/dl?url=' + encodeURIComponent(d.resultUrl)
         rbgShow('result')
       } catch (e) {
         rbgErrorMsg.textContent = '⚠️ Terjadi error. Coba lagi nanti.'
