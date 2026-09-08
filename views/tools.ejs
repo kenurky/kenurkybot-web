@@ -140,6 +140,13 @@
         <button id="rbgAgain" class="tool-btn-ghost">↻ Proses foto lain</button>
       </div>
 
+      <div id="rbgDone" class="tt-done hidden">
+        <div class="tt-done-mark">✓</div>
+        <p class="tt-done-title">Foto kamu sudah dihapus background-nya</p>
+        <p class="tt-done-sub">File PNG transparan sudah tersimpan di perangkat kamu.</p>
+        <button id="rbgDoneClose" class="tool-btn-ghost">Tutup</button>
+      </div>
+
       <div id="rbgError" class="tt-result hidden"><p class="hasil-error"></p></div>
     </div>
 
@@ -357,6 +364,8 @@
     const rbgAgain = document.getElementById('rbgAgain')
     const rbgErrorEl = document.getElementById('rbgError')
     const rbgErrorMsg = rbgErrorEl.querySelector('.hasil-error')
+    const rbgDoneEl = document.getElementById('rbgDone')
+    const rbgDoneClose = document.getElementById('rbgDoneClose')
 
     let rbgDataUrl = null
 
@@ -365,6 +374,7 @@
       rbgLoading.classList.toggle('hidden', id !== 'loading')
       rbgResult.classList.toggle('hidden', id !== 'result')
       rbgErrorEl.classList.toggle('hidden', id !== 'error')
+      rbgDoneEl.classList.toggle('hidden', id !== 'done')
     }
 
     function rbgSetPreview(dataUrl) {
@@ -454,6 +464,16 @@
     })
 
     rbgAgain.addEventListener('click', () => {
+      rbgFile.value = ''
+      rbgSetPreview(null)
+      rbgShow('form')
+    })
+
+    rbgDownload.addEventListener('click', () => {
+      setTimeout(() => rbgShow('done'), 1200)
+    })
+
+    rbgDoneClose.addEventListener('click', () => {
       rbgFile.value = ''
       rbgSetPreview(null)
       rbgShow('form')
