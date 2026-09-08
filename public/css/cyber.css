@@ -524,6 +524,31 @@ video { width: 100%; display: block; max-height: 60vh; }
 }
 .rbg-result-wrap img { width: 100%; display: block; }
 
+.yt-toggle {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%;
+}
+.yt-opt {
+  padding: 11px 8px; border-radius: 12px; cursor: pointer;
+  font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 0.5px;
+  color: var(--gray); background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  transition: all 0.2s;
+}
+.yt-opt:hover { border-color: rgba(255, 61, 94, 0.55); color: var(--white); }
+.yt-opt.active {
+  color: var(--white); border-color: rgba(255, 61, 94, 0.8);
+  background: linear-gradient(135deg, rgba(255, 61, 94, 0.25), rgba(120, 20, 255, 0.18));
+  box-shadow: 0 0 16px rgba(255, 61, 94, 0.3);
+}
+.yt-media-wrap { position: relative; width: 100%; border-radius: 14px; overflow: hidden; border: 1px solid rgba(255,61,94,0.3); }
+.yt-media-wrap img { width: 100%; display: block; aspect-ratio: 16/9; object-fit: cover; background: #000; }
+.yt-dur {
+  position: absolute; right: 8px; bottom: 8px;
+  background: rgba(0, 0, 0, 0.78); color: #fff;
+  font-family: var(--mono); font-size: 12.5px; padding: 3px 8px; border-radius: 6px;
+}
+.yt-channel { width: 100%; font-size: 13px; color: var(--gray); margin-top: -6px; }
+
 .spinner {
   width: 46px; height: 46px; border-radius: 50%;
   border: 3px solid rgba(0, 229, 255, 0.2); border-top-color: var(--cyan);

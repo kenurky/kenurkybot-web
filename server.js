@@ -285,6 +285,104 @@ app.get('/api/removebg/dl', async (req, res) => {
   }
 })
 
+// ===== YouTube downloader (MP4 / MP3) =====
+const YT_MP4_URL = 'https://anabot.my.id/api/download/ytmp4'
+const YT_MP3_URL = 'https://anabot.my.id/api/download/ytmp3'
+const YT_STATUS_URL = 'https://anabot.my.id/api/download/status'
+const YT_POLL_MAX = 120
+const YT_POLL_INTERVAL = 4000
+
+const sleepYt = (ms) => new Promise(r => setTimeout(r, ms))
+
+app.post('/api/yt', async (req, res) => {
+  try {
+    const url = (req.body?.url || '').trim()
+    const format = (req.body?.format || 'mp4').toLowerCase()
+    if (!url) return res.json({ ok: false, error: 'Link YouTube wajib diisi' })
+    if (!/(youtube\.com\/watch|youtu\.be\/|youtube\.com\/shorts)/i.test(url)) {
+      return res.json({ ok: false, error: 'Link bukan dari YouTube' })
+    }
+    const endpoint = format === 'mp3' ? YT_MP3_URL : YT_MP4_URL
+
+    // 1) Buat task di anabot
+    const createRes = await fetch(endpoint + '?' + new URLSearchParams({ url, apikey: TIKTOK_API_KEY }), {
+      headers: { accept: 'application/json', 'User-Agent': TIKTOK_UA },
+      signal: AbortSignal.timeout(25_000)
+    })
+    const createJson = await createRes.json()
+    const taskId = createJson?.data?.taskId
+    if (!createRes.ok || !taskId) {
+      return res.json({ ok: false, error: 'Gagal membuat proses YouTube.', raw: createJson })
+    }
+
+    // 2) Poll status sampai completed / failed / timeout
+    const deadline = Date.now() + YT_POLL_MAX * YT_POLL_INTERVAL
+    let last = null
+    while (Date.now() < deadline) {
+      await sleepYt(YT_POLL_INTERVAL)
+      try {
+        const statusRes = await fetch(YT_STATUS_URL + '?' + new URLSearchParams({ id: taskId }), {
+          headers: { accept: 'application/json', 'User-Agent': TIKTOK_UA },
+          signal: AbortSignal.timeout(15_000)
+        })
+        const statusJson = await statusRes.json()
+        last = statusJson
+        if (statusJson?.status === 'completed' && statusJson?.data?.urls) break
+        if (statusJson?.status === 'failed' || statusJson?.success === false) {
+          return res.json({ ok: false, error: (statusJson?.error || 'Gagal memproses video.').trim(), raw: statusJson })
+        }
+      } catch (e) { /* toleransi error sementara, lanjut poll */ }
+    }
+
+    const hasil = last?.data
+    if (!hasil?.urls) {
+      return res.json({ ok: false, error: 'Proses terlalu lama, coba lagi nanti. (Video panjang butuh waktu)' , raw: last })
+    }
+
+    const md = hasil.metadata ?? {}
+    const isAudio = hasil.type === 'AUDIO' || /audio/i.test(hasil.mimetype || '')
+    res.json({
+      ok: true,
+      format,
+      isAudio,
+      contentType: isAudio ? 'audio/mp4' : 'video/mp4',
+      mediaUrl: hasil.urls,
+      metadata: {
+        title: md.title || 'Judul tidak diketahui',
+        duration: Number(md.duration) || 0,
+        channel: md.channel || md.uploader || '',
+        thumbnail: md.thumbnail || '',
+        webpage_url: md.webpage_url || ''
+      }
+    })
+  } catch (e) {
+    res.json({ ok: false, error: 'Error YouTube: ' + e.message })
+  }
+})
+
+app.get('/api/yt/dl', async (req, res) => {
+  try {
+    const mediaUrl = req.query.url
+    const isAudio = req.query.type === 'audio'
+    if (!mediaUrl || !/^https?:\/\//.test(mediaUrl)) return res.status(400).json({ ok: false, error: 'URL tidak valid' })
+
+    const upstream = await fetch(mediaUrl, {
+      headers: { 'User-Agent': TIKTOK_UA, 'Referer': 'https://www.youtube.com/' },
+      redirect: 'follow',
+      signal: AbortSignal.timeout(120_000)
+    })
+    if (!upstream.ok) return res.status(502).json({ ok: false, error: 'Gagal mengambil media (HTTP ' + upstream.status + ')' })
+
+    const buffer = Buffer.from(await upstream.arrayBuffer())
+    res.set('Content-Type', isAudio ? 'audio/mp4' : 'video/mp4')
+    res.set('Content-Disposition', 'attachment; filename="' + (isAudio ? 'youtube-audio.m4a' : 'youtube-video.mp4') + '"')
+    res.set('Content-Length', buffer.length)
+    res.send(buffer)
+  } catch (e) {
+    res.status(500).json({ ok: false, error: 'Download gagal: ' + e.message })
+  }
+})
+
 app.post('/api/lokasi', (req, res) => {
   const nomor = (req.body?.nomor || '').replace(/[^\d]/g, '')
   if (!nomor) return res.json({ ok: false, error: 'Nomor wajib diisi' })

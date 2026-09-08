@@ -150,6 +150,53 @@
       <div id="rbgError" class="tt-result hidden"><p class="hasil-error"></p></div>
     </div>
 
+    <div class="tool-card" id="ytCard">
+      <div class="tool-head">
+        <span class="tool-icon" style="color:#ff3d5e">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.5 15.6V8.4L15.8 12l-6.3 3.6z"/></svg>
+        </span>
+        <div class="tool-title-wrap">
+          <strong class="tool-title">YouTube Downloader</strong>
+          <small class="tool-sub">Download video MP4 atau audio dari YouTube</small>
+        </div>
+        <span class="tool-badge">#4</span>
+      </div>
+
+      <div class="tt-form" id="ytForm">
+        <input type="url" id="ytUrl" class="input" placeholder="Tempel link YouTube (youtube.com/watch...)" autocomplete="off">
+        <div class="yt-toggle">
+          <button type="button" class="yt-opt active" data-format="mp4">🎬 MP4 (Video)</button>
+          <button type="button" class="yt-opt" data-format="mp3">🎵 MP3 (Audio)</button>
+        </div>
+        <button id="ytConfirm" class="tool-btn">Konfirmasi Link →</button>
+      </div>
+
+      <div id="ytLoading" class="tt-result hidden">
+        <div class="spinner"></div>
+        <p id="ytLoadingText">⏳ Memproses video...</p>
+      </div>
+
+      <div id="ytResult" class="hidden">
+        <div class="yt-media-wrap">
+          <img id="ytThumb" alt="thumbnail">
+          <span id="ytDur" class="yt-dur"></span>
+        </div>
+        <p id="ytTitle" class="tt-caption"></p>
+        <p id="ytChannel" class="yt-channel"></p>
+        <a id="ytDownload" class="tool-btn tt-download" download>⬇ Download</a>
+        <button id="ytAgain" class="tool-btn-ghost">↻ Download video lain</button>
+      </div>
+
+      <div id="ytDone" class="tt-done hidden">
+        <div class="tt-done-mark">✓</div>
+        <p class="tt-done-title">File anda sudah terdownload</p>
+        <p class="tt-done-sub">Video/audio sudah tersimpan di perangkat kamu.</p>
+        <button id="ytDoneClose" class="tool-btn-ghost">Tutup</button>
+      </div>
+
+      <div id="ytError" class="tt-result hidden"><p class="hasil-error"></p></div>
+    </div>
+
     <div style="height:24px"></div>
     <a href="/" class="tools-back" style="text-align:center">© KenurkyBot • Cyber style</a>
   </main>
@@ -478,6 +525,116 @@
       rbgSetPreview(null)
       rbgShow('form')
     })
+
+    // ===== YouTube Downloader =====
+    const ytForm = document.getElementById('ytForm')
+    const ytUrl = document.getElementById('ytUrl')
+    const ytConfirm = document.getElementById('ytConfirm')
+    const ytToggle = document.querySelectorAll('.yt-opt')
+    const ytLoading = document.getElementById('ytLoading')
+    const ytLoadingText = document.getElementById('ytLoadingText')
+    const ytResult = document.getElementById('ytResult')
+    const ytThumb = document.getElementById('ytThumb')
+    const ytDur = document.getElementById('ytDur')
+    const ytTitle = document.getElementById('ytTitle')
+    const ytChannel = document.getElementById('ytChannel')
+    const ytDownload = document.getElementById('ytDownload')
+    const ytAgain = document.getElementById('ytAgain')
+    const ytDoneEl = document.getElementById('ytDone')
+    const ytDoneClose = document.getElementById('ytDoneClose')
+    const ytErrorEl = document.getElementById('ytError')
+    const ytErrorMsg = ytErrorEl.querySelector('.hasil-error')
+
+    let ytFormat = 'mp4'
+    let ytLast = null
+
+    function ytShow(id) {
+      ytConfirm.style.display = id === 'form' ? 'inline-flex' : 'none'
+      ytForm.style.display = id === 'form' ? 'flex' : 'none'
+      ytLoading.classList.toggle('hidden', id !== 'loading')
+      ytResult.classList.toggle('hidden', id !== 'result')
+      ytErrorEl.classList.toggle('hidden', id !== 'error')
+      ytDoneEl.classList.toggle('hidden', id !== 'done')
+    }
+
+    ytToggle.forEach(btn => btn.addEventListener('click', () => {
+      ytToggle.forEach(b => b.classList.remove('active'))
+      btn.classList.add('active')
+      ytFormat = btn.dataset.format
+    }))
+
+    function fmtYtDur(s) {
+      s = Math.round(Number(s) || 0)
+      const h = Math.floor(s / 3600)
+      const m = Math.floor((s % 3600) / 60)
+      const sec = s % 60
+      const mm = m < 10 ? '0' + m : '' + m
+      const ss = sec < 10 ? '0' + sec : '' + sec
+      return h > 0 ? (h + ':' + mm + ':' + ss) : (mm + ':' + ss)
+    }
+
+    ytConfirm.addEventListener('click', async () => {
+      const url = ytUrl.value.trim()
+      if (!url) { ytUrl.focus(); return }
+      if (!/(youtube\.com\/watch|youtu\.be\/|youtube\.com\/shorts)/i.test(url)) {
+        ytErrorMsg.textContent = '⚠️ Link bukan dari YouTube.'
+        ytShow('error')
+        return
+      }
+      ytShow('loading')
+      ytLoadingText.textContent = ytFormat === 'mp3'
+        ? '⏳ Mengubah video jadi audio MP3... (bisa beberapa menit)'
+        : '⏳ Memproses video MP4... (video panjang butuh waktu)'
+      try {
+        const res = await fetch('/api/yt', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url, format: ytFormat })
+        })
+        const d = await res.json()
+        if (!d.ok) {
+          ytErrorMsg.textContent = '⚠️ ' + (d.error || 'Gagal memproses.')
+          ytShow('error')
+          return
+        }
+        ytLast = d
+        ytThumb.src = d.metadata.thumbnail || ''
+        if (d.metadata.thumbnail) {
+          ytThumb.style.display = 'block'
+          ytThumb.parentElement.style.display = 'block'
+        } else {
+          ytThumb.style.display = 'none'
+          ytThumb.parentElement.style.display = 'none'
+        }
+        ytDur.textContent = d.metadata.duration ? fmtYtDur(d.metadata.duration) : ''
+        ytTitle.textContent = d.metadata.title
+        ytChannel.textContent = d.metadata.channel ? '📺 ' + d.metadata.channel : ''
+        ytDownload.textContent = d.isAudio ? '⬇ Download MP3' : '⬇ Download MP4'
+        ytDownload.href = '/api/yt/dl?url=' + encodeURIComponent(d.mediaUrl) + '&type=' + (d.isAudio ? 'audio' : 'video')
+        ytShow('result')
+      } catch (e) {
+        ytErrorMsg.textContent = '⚠️ Terjadi error. Coba lagi nanti.'
+        ytShow('error')
+      }
+    })
+
+    ytDownload.addEventListener('click', () => {
+      setTimeout(() => ytShow('done'), 1200)
+    })
+
+    ytAgain.addEventListener('click', () => {
+      ytUrl.value = ''
+      ytUrl.focus()
+      ytShow('form')
+    })
+
+    ytDoneClose.addEventListener('click', () => {
+      ytUrl.value = ''
+      ytUrl.focus()
+      ytShow('form')
+    })
+
+    ytUrl.addEventListener('keydown', e => { if (e.key === 'Enter') ytConfirm.click() })
   </script>
 </body>
 </html>
