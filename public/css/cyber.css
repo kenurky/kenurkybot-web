@@ -555,3 +555,23 @@ video { width: 100%; display: block; max-height: 60vh; }
   animation: spin 0.8s linear infinite;
 }
 .hidden { display: none !important; }
+
+/* ===== Indikator scroll: masih ada fitur di bawah ===== */
+.tools-more {
+  display: flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; margin: 14px auto 2px;
+  border-radius: 50%;
+  color: var(--cyan);
+  border: 1px solid rgba(0, 229, 255, 0.45);
+  background: rgba(0, 229, 255, 0.06);
+  box-shadow: 0 0 14px rgba(0, 229, 255, 0.2);
+  cursor: pointer;
+  animation: moreBounce 1.6s ease-in-out infinite;
+  transition: opacity 0.3s;
+}
+.tools-more svg { width: 18px; height: 18px; }
+.tools-more.hide-arrow { opacity: 0; pointer-events: none; }
+@keyframes moreBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(6px); }
+}

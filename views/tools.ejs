@@ -22,6 +22,10 @@
     <h1 class="tools-logo">TOOLS</h1>
     <p class="tools-sub">Pilih alat yang kamu butuhkan</p>
 
+    <div class="tools-more" id="toolsMore" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+
     <div class="tool-card" id="toolCard">
       <div class="tool-head">
         <span class="tool-icon">
@@ -635,6 +639,20 @@
     })
 
     ytUrl.addEventListener('keydown', e => { if (e.key === 'Enter') ytConfirm.click() })
+  <script>
+    const moreArrow = document.getElementById('toolsMore')
+    function updateMoreArrow() {
+      if (!moreArrow) return
+      const remaining = document.documentElement.scrollHeight - window.innerHeight - window.scrollY
+      moreArrow.classList.toggle('hide-arrow', remaining < 60)
+    }
+    window.addEventListener('scroll', updateMoreArrow, { passive: true })
+    updateMoreArrow()
+    if (moreArrow) {
+      moreArrow.addEventListener('click', () => {
+        window.scrollBy({ top: window.innerHeight * 0.8, behavior: 'smooth' })
+      })
+    }
   </script>
 </body>
 </html>
